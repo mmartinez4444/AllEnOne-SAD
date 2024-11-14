@@ -632,8 +632,8 @@ function deleteCategory(categoryId) {
 }
 
 // Inventory Delete and Success Modals
-function openDeleteProductModal(productId) {
-  console.log('openDeleteProductModal called with productId:', productId); // Debugging line
+function openInventoryDeleteModal(productId) {
+  console.log('openInventoryDeleteModal called with productId:', productId); // Debugging line
   document.getElementById('inventoryDeleteModal').dataset.productId = productId;
   document.getElementById('inventoryDeleteModal').style.display = 'block';
   document.getElementById('backdrop').style.display = 'block';
@@ -672,6 +672,28 @@ function closeInventorySuccessModal() {
   document.getElementById('inventorySuccessModal').style.display = 'none';
   document.getElementById('backdrop').style.display = 'none';
 }
+
+//Add Prodcut  Modal
+
+document.getElementById('addProductForm').addEventListener('submit', function(event) {
+  event.preventDefault(); // Prevent the default form submission
+
+  var formData = new FormData(this);
+
+  fetch('php/add_product.php', {
+      method: 'POST',
+      body: formData
+  })
+  .then(response => response.text())
+  .then(data => {
+      alert(data); // Display the response from the server
+      closeAddProductModal(); // Close the modal
+      location.reload(); // Reload the page to see the new product
+  })
+  .catch(error => {
+      console.error('Error:', error);
+  });
+});
 
 
 

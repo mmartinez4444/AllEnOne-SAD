@@ -166,6 +166,7 @@ $role = $_SESSION['role'];
 
 <!-- Start of Inventory Section -->
 <div id="inventory" class="content-section" style="display: none;">
+    <h1>Inventory Management</h1>
     <div class="container-xl">
         <div class="table-wrapper">
             <div class="table-title">
@@ -194,53 +195,65 @@ $role = $_SESSION['role'];
                 </div>
             </div>
             <div class="table-responsive">
-                <table class="table table-striped table-hover">
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Image</th>
-                            <th>Product Code</th>
-                            <th>Product Name</th>
-                            <th>Category</th>
-                            <th>Stock</th>
-                            <th>Selling Price</th>
-                            <th>Buying Price</th>
-                            <th>Date Added</th>
-                            <th>Updated At</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php
-                        $sql = "SELECT inventory.id, inventory.image, inventory.product_code, inventory.product_name, categories.category_name, inventory.stock, inventory.price, inventory.buying_price, inventory.date_added, inventory.updated_at 
-                                FROM inventory 
-                                JOIN categories ON inventory.category_id = categories.id";
-                        $result = $conn->query($sql);
-                        if ($result->num_rows > 0) {
-                            while ($row = $result->fetch_assoc()) {
-                                echo "<tr>";
-                                echo "<td>{$row['id']}</td>";
-                                echo "<td><img src='uploads/{$row['image']}' alt='{$row['product_name']}' width='100'></td>";
-                                echo "<td>{$row['product_code']}</td>";
-                                echo "<td>{$row['product_name']}</td>";
-                                echo "<td>{$row['category_name']}</td>";
-                                echo "<td>{$row['stock']}</td>";
-                                echo "<td>{$row['price']}</td>";
-                                echo "<td>{$row['buying_price']}</td>";
-                                echo "<td>{$row['date_added']}</td>";
-                                echo "<td>{$row['updated_at']}</td>";
-                                echo "<td>
-                                        <a href='#' class='edit' onclick='editProduct({$row['id']})'><i class='fas fa-edit'></i></a>
-                                        <a href='#' class='delete' onclick='deleteProduct({$row['id']})'><i class='fas fa-trash'></i></a>
-                                      </td>";
-                                echo "</tr>";
-                            }
-                        } else {
-                            echo "<tr><td colspan='11'>No records found</td></tr>";
-                        }
-                        ?>
-                    </tbody>
-                </table>
+<table class="table table-striped table-hover inventory-table">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Image</th>
+            <th>Product Code</th>
+            <th>Product Name</th>
+            <th>Category</th>
+            <th>Stock</th>
+            <th>Selling Price</th>
+            <th>Buying Price</th>
+            <th>Date Added</th>
+            <th>Updated At</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody id="inventoryTableBody">
+        <?php
+        $sql = "SELECT inventory.id, inventory.image, inventory.product_code, inventory.product_name, categories.category_name, inventory.stock, inventory.price, inventory.buying_price, inventory.date_added, inventory.updated_at 
+                FROM inventory 
+                JOIN categories ON inventory.category_id = categories.id";
+        $result = $conn->query($sql);
+        if ($result->num_rows > 0) {
+            while ($row = $result->fetch_assoc()) {
+                echo "<tr>";
+                echo "<td>{$row['id']}</td>";
+                echo "<td><img src='uploads/{$row['image']}' alt='{$row['product_name']}' width='50'></td>";
+                echo "<td>{$row['product_code']}</td>";
+                echo "<td>{$row['product_name']}</td>";
+                echo "<td>{$row['category_name']}</td>";
+                echo "<td>{$row['stock']}</td>";
+                echo "<td>{$row['price']}</td>";
+                echo "<td>{$row['buying_price']}</td>";
+                echo "<td>{$row['date_added']}</td>";
+                echo "<td>{$row['updated_at']}</td>";
+                echo "<td>
+                        <a href='#' class='edit-btn' onclick='editProduct({$row['id']})'><i class='fas fa-edit'></i></a>
+                        <a href='#' class='delete-btn' data-id='{$row['id']}' onclick='openInventoryDeleteModal({$row['id']})'><i class='fas fa-trash'></i></a>
+                      </td>";
+                echo "</tr>";
+            }
+        } else {
+            echo "<tr><td colspan='11'>No records found</td></tr>";
+        }
+        ?>
+    </tbody>
+</table>
+                <div class="row">
+                    <div class="col-sm-6">
+                        <div id="inventoryCountMessage"></div>
+                    </div>
+                    <div class="col-sm-6 text-right">
+                        <div class="pagination">
+                            <button class="btn btn-secondary" onclick="prevInventoryPage()">Previous</button>
+                            <span id="inventoryPageInfo"></span>
+                            <button class="btn btn-secondary" onclick="nextInventoryPage()">Next</button>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -316,6 +329,10 @@ $role = $_SESSION['role'];
         <button class="btn btn-success" onclick="closeInventorySuccessModal()">OK</button>
     </div>
 </div>
+
+<!-- Backdrop -->
+<div id="backdrop" class="backdrop"></div>
+
 
 <!-- Category Management Modal -->
 <div id="categoryModal" class="category-modal">

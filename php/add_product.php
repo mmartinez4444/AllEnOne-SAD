@@ -1,6 +1,11 @@
 <?php
 include 'connect.php'; // Include your database connection file
 
+// Enable error reporting for debugging
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $product_code = $_POST['product_code'];
     $product_name = $_POST['product_name'];
@@ -27,5 +32,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     }
 
     $conn->close();
+} else {
+    echo "Invalid request method.";
 }
 ?>
