@@ -1026,7 +1026,7 @@ table th {
     background-color: rgba(0,0,0,0.5); /* Black w/ opacity */
 }
 
-/*sasad*/
+/*Inventory modal*/
 
 .inventory-modal {
     display: none; /* Hidden by default */
@@ -1091,5 +1091,185 @@ table th {
 
 .inventory-table .delete-btn:hover {
     background-color: #c82333;
+    color: #fff;
+}
+
+/* Inventory Edit Modal */
+.inventory-edit-modal {
+    display: none; /* Hidden by default */
+    position: fixed; /* Stay in place */
+    z-index: 1000; /* Sit on top */
+    left: 0;
+    top: 0;
+    width: 100%; /* Full width */
+    height: 100%; /* Full height */
+    overflow: auto; /* Enable scroll if needed */
+    background-color: rgb(0,0,0); /* Fallback color */
+    background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+}
+
+.inventory-edit-modal-content {
+    background-color: #fefefe;
+    margin: 15% auto; /* 15% from the top and centered */
+    padding: 20px;
+    border: 1px solid #888;
+    width: 40%; /* Decreased width */
+    border-radius: 10px; /* Smooth edges */
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3); /* Add a shadow for better appearance */
+}
+
+.inventory-backdrop {
+    display: none; /* Hidden by default */
+    position: fixed; /* Stay in place */
+    z-index: 999; /* Sit below the modal */
+    left: 0;
+    top: 0;
+    width: 100%; /* Full width */
+    height: 100%; /* Full height */
+    background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+}
+
+/* Search Input Styles */
+.search-input {
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 13px;
+    width: 170px;
+    margin-right: 10px;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.search-input:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+    outline: none;
+}
+
+/* Filter Dropdown Styles */
+.filter-dropdown {
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 13px;
+    width: 170px;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.filter-dropdown:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+    outline: none;
+}
+
+
+/* table */
+
+/* Inventory Container Styles */
+.inventory-container {
+    width: 100%;
+    max-width: 100%;
+    padding: 0 15px;
+    margin: 80px auto 0;
+}
+
+/* Inventory Table Wrapper Styles */
+.inventory-table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Inventory Table Styles */
+.inventory-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.inventory-table th, .inventory-table td {
+    padding: 12px; /* Increased padding for more space */
+    text-align: center;
+    border-bottom: 1px solid #ddd;
+}
+
+.inventory-table th {
+    background-color: #f2f2f2;
+}
+
+/* Action Buttons */
+.inventory-table .inventory-edit-btn, .inventory-table .delete-btn {
+    display: inline-block;
+    margin: 0 5px;
+    padding: 5px 10px;
+    border-radius: 5px;
+    text-decoration: none;
+    color: #fff;
+    transition: background-color 0.3s ease;
+}
+
+.inventory-table .inventory-edit-btn {
+    background-color: #3dbdd1;
+}
+
+.inventory-table .inventory-edit-btn:hover {
+    background-color: #2a9cb0;
+}
+
+.inventory-table .delete-btn {
+    background-color: #d14141;
+}
+
+.inventory-table .delete-btn:hover {
+    background-color: #c82333;
+}
+
+/* Stock Level Styles */
+.low-stock {
+    color: #ff0000; /* Red for low stock */
+    border: 1px solid #ff0000;
+    padding: 2px 5px;
+    border-radius: 3px;
+    font-weight: bold;
+}
+
+.medium-stock {
+    color: #ffa500; /* Orange for medium stock */
+    border: 1px solid #ffa500;
+    padding: 2px 5px;
+    border-radius: 3px;
+    font-weight: bold;
+}
+
+.high-stock {
+    color: #008000; /* Green for high stock */
+    border: 1px solid #008000;
+    padding: 2px 5px;
+    border-radius: 3px;
+    font-weight: bold;
+}
+
+/* Inventory Stock Level Styles */
+.inventory-label {
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-size: 12px;
+    display: inline-block;
+}
+
+.inventory-label-success {
+    background-color: #28a745;
+    color: #fff;
+}
+
+.inventory-label-warning {
+    background-color: #ffc107;
+    color: #212529;
+}
+
+.inventory-label-danger {
+    background-color: #dc3545;
     color: #fff;
 }

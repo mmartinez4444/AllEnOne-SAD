@@ -166,9 +166,8 @@ $role = $_SESSION['role'];
 
 <!-- Start of Inventory Section -->
 <div id="inventory" class="content-section" style="display: none;">
-    <h1>Inventory Management</h1>
-    <div class="container-xl">
-        <div class="table-wrapper">
+    <div class="inventory-container">
+        <div class="inventory-table-wrapper">
             <div class="table-title">
                 <div class="row align-items-center">
                     <div class="col-sm-5">
@@ -177,8 +176,8 @@ $role = $_SESSION['role'];
                     <div class="col-sm-7 text-right">
                         <a href="#" class="btn btn-primary" onclick="openAddProductModal()"><i class="fas fa-plus"></i> <span>Add New Product</span></a>
                         <a href="#" class="btn btn-secondary" onclick="openCategoryModal()"><i class="fas fa-plus"></i> <span>Category</span></a>
-                        <input type="text" id="searchInventoryInput" placeholder="Search products..." onkeyup="searchInventory()">
-                        <select id="filterCategoryDropdown" onchange="filterInventory()">
+                        <input type="text" id="searchInventoryInput" class="search-input" placeholder="Search products..." onkeyup="searchInventory()">
+                        <select id="filterCategoryDropdown" class="filter-dropdown" onchange="filterInventory()">
                             <option value="">All Categories</option>
                             <!-- Populate categories dynamically -->
                             <?php
@@ -186,7 +185,7 @@ $role = $_SESSION['role'];
                             $result = $conn->query($sql);
                             if ($result->num_rows > 0) {
                                 while ($row = $result->fetch_assoc()) {
-                                    echo "<option value='{$row['id']}'>{$row['category_name']}</option>";
+                                    echo "<option value='{$row['category_name']}'>{$row['category_name']}</option>";
                                 }
                             }
                             ?>
@@ -195,53 +194,64 @@ $role = $_SESSION['role'];
                 </div>
             </div>
             <div class="table-responsive">
-<table class="table table-striped table-hover inventory-table">
-    <thead>
-        <tr>
-            <th>ID</th>
-            <th>Image</th>
-            <th>Product Code</th>
-            <th>Product Name</th>
-            <th>Category</th>
-            <th>Stock</th>
-            <th>Selling Price</th>
-            <th>Buying Price</th>
-            <th>Date Added</th>
-            <th>Updated At</th>
-            <th>Action</th>
-        </tr>
-    </thead>
-    <tbody id="inventoryTableBody">
-        <?php
-        $sql = "SELECT inventory.id, inventory.image, inventory.product_code, inventory.product_name, categories.category_name, inventory.stock, inventory.price, inventory.buying_price, inventory.date_added, inventory.updated_at 
-                FROM inventory 
-                JOIN categories ON inventory.category_id = categories.id";
-        $result = $conn->query($sql);
-        if ($result->num_rows > 0) {
-            while ($row = $result->fetch_assoc()) {
-                echo "<tr>";
-                echo "<td>{$row['id']}</td>";
-                echo "<td><img src='uploads/{$row['image']}' alt='{$row['product_name']}' width='50'></td>";
-                echo "<td>{$row['product_code']}</td>";
-                echo "<td>{$row['product_name']}</td>";
-                echo "<td>{$row['category_name']}</td>";
-                echo "<td>{$row['stock']}</td>";
-                echo "<td>{$row['price']}</td>";
-                echo "<td>{$row['buying_price']}</td>";
-                echo "<td>{$row['date_added']}</td>";
-                echo "<td>{$row['updated_at']}</td>";
-                echo "<td>
-                        <a href='#' class='edit-btn' onclick='editProduct({$row['id']})'><i class='fas fa-edit'></i></a>
-                        <a href='#' class='delete-btn' data-id='{$row['id']}' onclick='openInventoryDeleteModal({$row['id']})'><i class='fas fa-trash'></i></a>
-                      </td>";
-                echo "</tr>";
-            }
+                <table class="table table-striped table-hover inventory-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Image</th>
+                            <th>Product Code</th>
+                            <th>Product Name</th>
+                            <th>Category</th>
+                            <th>Stock</th>
+                            <th>Selling Price</th>
+                            <th>Buying Price</th>
+                            <th>Date Added</th>
+                            <th>Updated At</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="inventoryTableBody">
+                    <?php
+$sql = "SELECT inventory.id, inventory.image, inventory.product_code, inventory.product_name, categories.category_name, inventory.stock, inventory.price, inventory.buying_price, inventory.date_added, inventory.updated_at 
+        FROM inventory 
+        JOIN categories ON inventory.category_id = categories.id
+        ORDER BY inventory.id ASC";
+$result = $conn->query($sql);
+if ($result->num_rows > 0) {
+    while ($row = $result->fetch_assoc()) {
+        // Determine the stock level class
+        $stockClass = '';
+        if ($row['stock'] <= 10) {
+            $stockClass = 'low-stock';
+        } elseif ($row['stock'] <= 20) {
+            $stockClass = 'medium-stock';
         } else {
-            echo "<tr><td colspan='11'>No records found</td></tr>";
+            $stockClass = 'high-stock';
         }
-        ?>
-    </tbody>
-</table>
+
+        echo "<tr>";
+        echo "<td>{$row['id']}</td>";
+        echo "<td><img src='uploads/{$row['image']}' alt='{$row['product_name']}' width='50'></td>";
+        echo "<td>{$row['product_code']}</td>";
+        echo "<td>{$row['product_name']}</td>";
+        echo "<td>{$row['category_name']}</td>";
+        echo "<td class='{$stockClass}'>{$row['stock']}</td>";
+        echo "<td>{$row['price']}</td>";
+        echo "<td>{$row['buying_price']}</td>";
+        echo "<td>{$row['date_added']}</td>";
+        echo "<td>{$row['updated_at']}</td>";
+        echo "<td>
+                <a href='#' class='inventory-edit-btn' onclick='openEditInventoryProductModal({$row['id']})'><i class='fas fa-edit'></i></a>                        
+                <a href='#' class='delete-btn' data-id='{$row['id']}' onclick='openInventoryDeleteModal({$row['id']})'><i class='fas fa-trash'></i></a>
+              </td>";
+        echo "</tr>";
+    }
+} else {
+    echo "<tr><td colspan='11'>No records found</td></tr>";
+}
+?>
+                    </tbody>
+                </table>
                 <div class="row">
                     <div class="col-sm-6">
                         <div id="inventoryCountMessage"></div>
@@ -256,6 +266,43 @@ $role = $_SESSION['role'];
                 </div>
             </div>
         </div>
+    </div>
+</div>
+
+
+<!-- Edit Inventory Modal -->
+<div id="editInventoryProductModal" class="inventory-edit-modal">
+    <div class="inventory-edit-modal-content">
+        <span class="close" onclick="closeEditInventoryProductModal()">&times;</span>
+        <h2>Edit Product</h2>
+        <form id="editInventoryProductForm" enctype="multipart/form-data">
+            <div class="input-group">
+                <label for="editInventoryProductImage">Product Image</label>
+                <img id="editInventoryProductImagePreview" src="" alt="Product Image" style="width: 100px; height: auto; border-radius: 8px;">
+                <input type="file" id="editInventoryProductImage" name="image" accept="image/*" onchange="previewEditInventoryProductImage()">
+            </div>
+            <div class="input-group">
+                <label for="editInventoryProductCode">Product Code</label>
+                <input type="text" id="editInventoryProductCode" name="product_code" required>
+            </div>
+            <div class="input-group">
+                <label for="editInventoryProductName">Product Name</label>
+                <input type="text" id="editInventoryProductName" name="product_name" required>
+            </div>
+            <div class="input-group">
+                <label for="editInventoryStock">Stock</label>
+                <input type="number" id="editInventoryStock" name="stock" required>
+            </div>
+            <div class="input-group">
+                <label for="editInventoryPrice">Selling Price</label>
+                <input type="number" step="0.01" id="editInventoryPrice" name="price" required>
+            </div>
+            <div class="input-group">
+                <label for="editInventoryBuyingPrice">Buying Price</label>
+                <input type="number" step="0.01" id="editInventoryBuyingPrice" name="buying_price" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Save Changes</button>
+        </form>
     </div>
 </div>
 

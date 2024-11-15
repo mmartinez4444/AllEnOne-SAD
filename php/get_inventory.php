@@ -1,13 +1,26 @@
 <?php
-include 'connect.php'; // Include your database connection file
+include 'connect.php';
 
 $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
 $itemsPerPage = isset($_GET['itemsPerPage']) ? (int)$_GET['itemsPerPage'] : 10;
+$search = isset($_GET['search']) ? $_GET['search'] : '';
+$category = isset($_GET['category']) ? $_GET['category'] : '';
 $offset = ($page - 1) * $itemsPerPage;
+
+$searchQuery = "";
+if ($search) {
+    $searchQuery = "AND (inventory.product_code LIKE '%$search%' OR inventory.product_name LIKE '%$search%' OR categories.category_name LIKE '%$search%' OR inventory.stock LIKE '%$search%' OR inventory.price LIKE '%$search%' OR inventory.buying_price LIKE '%$search%' OR inventory.date_added LIKE '%$search%' OR inventory.updated_at LIKE '%$search%')";
+}
+
+$categoryQuery = "";
+if ($category) {
+    $categoryQuery = "AND categories.category_name LIKE '%$category%'";
+}
 
 $sql = "SELECT inventory.id, inventory.image, inventory.product_code, inventory.product_name, categories.category_name, inventory.stock, inventory.price, inventory.buying_price, inventory.date_added, inventory.updated_at 
         FROM inventory 
         JOIN categories ON inventory.category_id = categories.id
+        WHERE 1=1 $searchQuery $categoryQuery
         ORDER BY inventory.id ASC
         LIMIT $itemsPerPage OFFSET $offset";
 $result = $conn->query($sql);
@@ -19,7 +32,7 @@ if ($result->num_rows > 0) {
     }
 }
 
-$sqlTotal = "SELECT COUNT(*) as total FROM inventory";
+$sqlTotal = "SELECT COUNT(*) as total FROM inventory JOIN categories ON inventory.category_id = categories.id WHERE 1=1 $searchQuery $categoryQuery";
 $resultTotal = $conn->query($sqlTotal);
 $totalItems = $resultTotal->fetch_assoc()['total'];
 $totalPages = ceil($totalItems / $itemsPerPage);

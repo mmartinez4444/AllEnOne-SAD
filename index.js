@@ -519,6 +519,7 @@ function nextInventoryPage() {
   }
 }
 
+/*
 function searchInventory() {
   const input = document.getElementById('searchInventoryInput');
   const filter = input.value.toLowerCase();
@@ -550,6 +551,8 @@ function filterInventory() {
 document.addEventListener('DOMContentLoaded', function() {
   displayInventory();
 });
+
+*/
 
 
 // Category Management
@@ -696,6 +699,224 @@ document.getElementById('addProductForm').addEventListener('submit', function(ev
 });
 
 
+//pagination
 
+let inventoryCurrentPage = 1;
+const itemsPerPage = 10;
+
+// Function to load inventory page
+function loadInventoryPage(page, search = '', category = '') {
+    inventoryCurrentPage = page;
+    fetch(`php/get_inventory.php?page=${page}&itemsPerPage=${itemsPerPage}&search=${search}&category=${category}`)
+        .then(response => response.json())
+        .then(data => {
+            const tbody = document.getElementById('inventoryTableBody');
+            tbody.innerHTML = '';
+            data.items.forEach(item => {
+                // Determine the stock level class
+                let stockClass = '';
+                if (item.stock <= 10) {
+                    stockClass = 'inventory-label inventory-label-danger';
+                } else if (item.stock <= 20) {
+                    stockClass = 'inventory-label inventory-label-warning';
+                } else {
+                    stockClass = 'inventory-label inventory-label-success';
+                }
+
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${item.id}</td>
+                    <td><img src='uploads/${item.image}' alt='${item.product_name}' class='inventory-image' style='width: 100px; height: auto; border-radius: 8px;'></td>
+                    <td>${item.product_code}</td>
+                    <td>${item.product_name}</td>
+                    <td>${item.category_name}</td>
+                    <td><span class='${stockClass}'>${item.stock}</span></td>
+                    <td>${item.price}</td>
+                    <td>${item.buying_price}</td>
+                    <td>${item.date_added}</td>
+                    <td>${item.updated_at}</td>
+                    <td>
+                        <a href='#' class='inventory-edit-btn' onclick='openEditInventoryProductModal(${item.id})'><i class='fas fa-edit'></i></a>
+                        <a href='#' class='delete-btn' data-id='${item.id}' onclick='openInventoryDeleteModal(${item.id})'><i class='fas fa-trash'></i></a>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+            document.getElementById('inventoryPageInfo').innerText = `Page ${data.currentPage} of ${data.totalPages}`;
+            document.getElementById('inventoryCountMessage').innerText = `Showing ${data.items.length} of ${data.totalItems} entries`;
+        })
+        .catch(error => console.error('Error loading inventory:', error));
+}
+
+// Function to search and filter inventory
+function searchInventory() {
+    const input = document.getElementById('searchInventoryInput');
+    const filter = input.value.toLowerCase();
+    const filterDropdown = document.getElementById('filterCategoryDropdown').value.toLowerCase();
+
+    loadInventoryPage(1, filter, filterDropdown); // Reset to the first page and apply search and filter
+}
+
+// Function to filter inventory based on category
+function filterInventory() {
+    searchInventory();
+}
+
+// Function to load the previous inventory page
+function prevInventoryPage() {
+    if (inventoryCurrentPage > 1) {
+        const filter = document.getElementById('searchInventoryInput').value.toLowerCase();
+        const filterDropdown = document.getElementById('filterCategoryDropdown').value.toLowerCase();
+        loadInventoryPage(inventoryCurrentPage - 1, filter, filterDropdown);
+    }
+}
+
+// Function to load the next inventory page
+function nextInventoryPage() {
+    const filter = document.getElementById('searchInventoryInput').value.toLowerCase();
+    const filterDropdown = document.getElementById('filterCategoryDropdown').value.toLowerCase();
+    fetch(`php/get_inventory.php?page=${inventoryCurrentPage + 1}&itemsPerPage=${itemsPerPage}&search=${filter}&category=${filterDropdown}`)
+        .then(response => response.json())
+        .then(data => {
+            if (inventoryCurrentPage < data.totalPages) {
+                loadInventoryPage(inventoryCurrentPage + 1, filter, filterDropdown);
+            }
+        })
+        .catch(error => console.error('Error loading inventory:', error));
+}
+
+// Load the first page initially
+document.addEventListener('DOMContentLoaded', function() {
+    loadInventoryPage(1);
+});
+
+// End of shit
+
+// Function to open the edit inventory modal
+function openEditInventoryProductModal(productId) {
+  fetch(`php/get_product.php?id=${productId}`)
+      .then(response => response.json())
+      .then(data => {
+          document.getElementById('editInventoryProductImagePreview').src = `uploads/${data.image}`;
+          document.getElementById('editInventoryProductCode').value = data.product_code;
+          document.getElementById('editInventoryProductName').value = data.product_name;
+          document.getElementById('editInventoryStock').value = data.stock;
+          document.getElementById('editInventoryPrice').value = data.price;
+          document.getElementById('editInventoryBuyingPrice').value = data.buying_price;
+          document.getElementById('editInventoryProductForm').dataset.productId = productId;
+          document.getElementById('editInventoryProductModal').style.display = 'block';
+      })
+      .catch(error => console.error('Error fetching product data:', error));
+}
+
+// Function to open the edit inventory modal
+function openEditInventoryProductModal(productId) {
+  fetch(`php/get_product.php?id=${productId}`)
+      .then(response => response.json())
+      .then(data => {
+          document.getElementById('editInventoryProductImagePreview').src = `uploads/${data.image}`;
+          document.getElementById('editInventoryProductCode').value = data.product_code;
+          document.getElementById('editInventoryProductName').value = data.product_name;
+          document.getElementById('editInventoryStock').value = data.stock;
+          document.getElementById('editInventoryPrice').value = data.price;
+          document.getElementById('editInventoryBuyingPrice').value = data.buying_price;
+          document.getElementById('editInventoryProductForm').dataset.productId = productId;
+          document.getElementById('editInventoryProductModal').style.display = 'block';
+      })
+      .catch(error => console.error('Error fetching product data:', error));
+}
+
+// Function to close the edit inventory modal
+function closeEditInventoryProductModal() {
+  document.getElementById('editInventoryProductModal').style.display = 'none';
+}
+
+// Function to preview the selected image
+function previewEditInventoryProductImage() {
+  const file = document.getElementById('editInventoryProductImage').files[0];
+  const reader = new FileReader();
+  reader.onloadend = function() {
+      document.getElementById('editInventoryProductImagePreview').src = reader.result;
+  }
+  if (file) {
+      reader.readAsDataURL(file);
+  } else {
+      document.getElementById('editInventoryProductImagePreview').src = '';
+  }
+}
+
+// Event listener for the edit inventory form submission
+document.getElementById('editInventoryProductForm').addEventListener('submit', function(event) {
+  event.preventDefault();
+  const productId = this.dataset.productId;
+  const formData = new FormData(this);
+  formData.append('id', productId);
+
+  fetch('php/edit_product.php', {
+      method: 'POST',
+      body: formData
+  })
+      .then(response => response.json())
+      .then(data => {
+          if (data.success) {
+              alert('Product updated successfully');
+              closeEditInventoryProductModal();
+              loadInventoryPage(inventoryCurrentPage); // Reload the current page to see the changes
+          } else {
+              alert('Error updating product: ' + data.message);
+          }
+      })
+      .catch(error => console.error('Error updating product:', error));
+});
+
+
+/*  Function to search and filter inventory
+function searchInventory() {
+  const input = document.getElementById('searchInventoryInput');
+  const filter = input.value.toLowerCase();
+  const filterDropdown = document.getElementById('filterCategoryDropdown').value.toLowerCase();
+
+  fetch(`php/get_inventory.php?search=${filter}&category=${filterDropdown}&page=${inventoryCurrentPage}&itemsPerPage=${itemsPerPage}`)
+    .then(response => response.json())
+    .then(data => {
+      const tbody = document.getElementById('inventoryTableBody');
+      tbody.innerHTML = '';
+      data.items.forEach(item => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${item.id}</td>
+          <td><img src='uploads/${item.image}' alt='${item.product_name}' class='inventory-image' style='width: 100px; height: auto; border-radius: 8px;'></td>
+          <td>${item.product_code}</td>
+          <td>${item.product_name}</td>
+          <td>${item.category_name}</td>
+          <td>${item.stock}</td>
+          <td>${item.price}</td>
+          <td>${item.buying_price}</td>
+          <td>${item.date_added}</td>
+          <td>${item.updated_at}</td>
+          <td>
+            <a href='#' class='edit-btn' onclick='openEditInventoryProductModal(${item.id})'><i class='fas fa-edit'></i></a>
+            <a href='#' class='delete-btn' data-id='${item.id}' onclick='openInventoryDeleteModal(${item.id})'><i class='fas fa-trash'></i></a>
+          </td>
+        `;
+        tbody.appendChild(row);
+      });
+      document.getElementById('inventoryPageInfo').innerText = `Page ${data.currentPage} of ${data.totalPages}`;
+      document.getElementById('inventoryCountMessage').innerText = `Showing ${data.items.length} of ${data.totalItems} entries`;
+    })
+    .catch(error => console.error('Error searching inventory:', error));
+}
+
+// Function to filter inventory based on category
+function filterInventory() {
+  searchInventory();
+}
+
+// Load the first page initially
+document.addEventListener('DOMContentLoaded', function() {
+  loadInventoryPage(1);
+});
+
+*/
 
 // end of inventory js 
