@@ -1273,3 +1273,150 @@ table th {
     background-color: #dc3545;
     color: #fff;
 }
+
+/* Adjust POS Section Position */
+#pos {
+    margin-top: 80px; /* Adjust this value as needed to move the POS section down */
+}
+
+/* POS Container Styles */
+.pos-container {
+    display: flex;
+    flex-direction: row;
+    gap: 20px;
+    padding: 20px;
+}
+
+/* POS Section Styles */
+.pos-section {
+    padding: 20px;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Categories Section Styles */
+#categories-section {
+    flex: 0 0 150px; /* Make the categories section smaller */
+}
+
+/* Items Section Styles */
+#items-section {
+    flex: 0 0 65%; /* Slightly reduce the width of the items section */
+}
+
+/* Bill Section Styles */
+#bill-section {
+    flex: 1; /* Make the bill section take up the remaining space */
+}
+
+/* Categories List Styles */
+#categories-list {
+    list-style-type: none; /* Remove bullets */
+    padding: 0;
+}
+
+#categories-list li {
+    margin-bottom: 10px;
+}
+
+.category-btn {
+    display: block;
+    width: 100%;
+    padding: 10px 15px;
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    text-align: center;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.category-btn:hover {
+    background-color: #0056b3;
+}
+
+.category-btn.active {
+    background-color: #0056b3;
+}
+
+/* Items Container Styles */
+.items-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px; /* Reduced gap for smaller cards */
+}
+
+/* Item Card Styles */
+.item-card {
+    flex: 1 1 calc(22% - 10px); /* Smaller cards, 5 per row */
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    transition: transform 0.3s ease;
+    cursor: pointer; /* Make the card clickable */
+    height: 200px; /* Set a fixed height */
+    position: relative; /* For overlay positioning */
+}
+
+.item-card:hover {
+    transform: translateY(-5px);
+}
+
+.item-card.out-of-stock {
+    cursor: not-allowed; /* Make the card non-clickable */
+    opacity: 0.5; /* Dim the card */
+}
+
+.item-image {
+    width: 100%;
+    height: 60%; /* Adjust height to fit within the card */
+    object-fit: contain;
+}
+
+.item-details {
+    padding: 10px; /* Adjust padding for better visibility */
+    text-align: center;
+}
+
+.item-details h3 {
+    margin: 5px 0;
+    font-size: 14px; /* Adjust font size for better visibility */
+}
+
+.item-details p {
+    margin: 5px 0;
+    font-size: 12px; /* Adjust font size for better visibility */
+    color: #333;
+}
+
+.overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5); /* Semi-transparent background */
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    font-weight: bold;
+    border-radius: 8px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .item-card {
+        flex: 1 1 calc(25% - 10px); /* 4 per row on smaller screens */
+    }
+}
+
+@media (max-width: 480px) {
+    .item-card {
+        flex: 1 1 calc(50% - 10px); /* 2 per row on mobile screens */
+    }
+}

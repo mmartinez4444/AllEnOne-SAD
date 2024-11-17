@@ -174,8 +174,10 @@ $role = $_SESSION['role'];
                         <h2>Inventory <b>Management</b></h2>
                     </div>
                     <div class="col-sm-7 text-right">
-                        <a href="#" class="btn btn-primary" onclick="openAddProductModal()"><i class="fas fa-plus"></i> <span>Add New Product</span></a>
-                        <a href="#" class="btn btn-secondary" onclick="openCategoryModal()"><i class="fas fa-plus"></i> <span>Category</span></a>
+                    <?php if ($role === 'admin'): ?>
+                            <a href="#" class="btn btn-primary" onclick="openAddProductModal()"><i class="fas fa-plus"></i> <span>Add New Product</span></a>
+                            <a href="#" class="btn btn-secondary" onclick="openCategoryModal()"><i class="fas fa-plus"></i> <span>Category</span></a>
+                            <?php endif; ?>
                         <input type="text" id="searchInventoryInput" class="search-input" placeholder="Search products..." onkeyup="searchInventory()">
                         <select id="filterCategoryDropdown" class="filter-dropdown" onchange="filterInventory()">
                             <option value="">All Categories</option>
@@ -240,15 +242,16 @@ if ($result->num_rows > 0) {
         echo "<td>{$row['buying_price']}</td>";
         echo "<td>{$row['date_added']}</td>";
         echo "<td>{$row['updated_at']}</td>";
-        echo "<td>
-                <a href='#' class='inventory-edit-btn' onclick='openEditInventoryProductModal({$row['id']})'><i class='fas fa-edit'></i></a>                        
-                <a href='#' class='delete-btn' data-id='{$row['id']}' onclick='openInventoryDeleteModal({$row['id']})'><i class='fas fa-trash'></i></a>
-              </td>";
+        echo "<td>";
+      
+            echo "<a href='#' class='inventory-edit-btn' onclick='openEditInventoryProductModal({$row['id']})'><i class='fas fa-edit'></i></a>";
+            echo "<a href='#' class='delete-btn' data-id='{$row['id']}' onclick='openInventoryDeleteModal({$row['id']})'><i class='fas fa-trash'></i></a>";
+        }
+        echo "</td>";
         echo "</tr>";
     }
-} else {
     echo "<tr><td colspan='11'>No records found</td></tr>";
-}
+
 ?>
                     </tbody>
                 </table>
@@ -456,9 +459,28 @@ if ($result->num_rows > 0) {
 
 
 
-        <div id="pos" class="content-section" style="display: none;">
-            <h1>POS Content</h1>
+<div id="pos" class="content-section" style="display: none;">
+        <div class="pos-container" style="display: flex; flex-direction: row;">
+            <!-- Section 1: Categories -->
+            <div id="categories-section" class="pos-section">
+                <h2>Categories</h2>
+                <ul id="categories-list"></ul>
+            </div>
+            <!-- Section 2: Items -->
+            <div id="items-section" class="pos-section">
+                <h2>Items</h2>
+                <div id="items-list" class="items-container"></div>
+            </div>
+            <!-- Section 3: Bill -->
+            <div id="bill-section" class="pos-section">
+                <h2>Bill</h2>
+                <ul id="bill-list"></ul>
+                <div id="total-amount">Total: ₱0.00</div>
+                <button id="complete-sale-btn">Complete Sale</button>
+            </div>
         </div>
+    </div>
+
 
         <div id="sales" class="content-section" style="display: none;">
             <h1>Sales Content</h1>
@@ -466,7 +488,7 @@ if ($result->num_rows > 0) {
 
 
                         <!-- Start User Section  -->
-        <?php if ($role == 'admin'): ?>
+     
 <div id="user" class="content-section" style="display: none;">
     <div class="container-xl">
         <div class="table-responsive">
@@ -535,7 +557,7 @@ if ($result->num_rows > 0) {
 <script>
     const users = <?php echo json_encode($users); ?>;
 </script>
-<?php endif; ?>
+
 
 <!-- Activity Modal -->
 <div id="activityModal" class="modal">
@@ -718,6 +740,10 @@ if ($result->num_rows > 0) {
     <script>const userId = <?php echo json_encode($_SESSION['user_id']); ?>;</script>
 
     
+    <script>
+        const role = '<?php echo $role; ?>';
+    </script>
+
     <!-- Start Add Product Modal -->
 
     <script>

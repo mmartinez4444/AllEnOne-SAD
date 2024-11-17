@@ -518,7 +518,6 @@ function nextInventoryPage() {
     displayInventory();
   }
 }
-
 /*
 function searchInventory() {
   const input = document.getElementById('searchInventoryInput');
@@ -736,8 +735,10 @@ function loadInventoryPage(page, search = '', category = '') {
                     <td>${item.date_added}</td>
                     <td>${item.updated_at}</td>
                     <td>
+                        ${role === 'admin' ? `
                         <a href='#' class='inventory-edit-btn' onclick='openEditInventoryProductModal(${item.id})'><i class='fas fa-edit'></i></a>
                         <a href='#' class='delete-btn' data-id='${item.id}' onclick='openInventoryDeleteModal(${item.id})'><i class='fas fa-trash'></i></a>
+                        ` : ''}
                     </td>
                 `;
                 tbody.appendChild(row);
@@ -920,3 +921,134 @@ document.addEventListener('DOMContentLoaded', function() {
 */
 
 // end of inventory js 
+
+// POS SHits
+
+document.addEventListener('DOMContentLoaded', function() {
+  loadCategories();
+  loadItems();
+
+  document.getElementById('complete-sale-btn').addEventListener('click', completeSale);
+});
+
+function loadCategories() {
+  fetch('php/get_categories.php')
+      .then(response => response.json())
+      .then(data => {
+          const categoriesList = document.getElementById('categories-list');
+          categoriesList.innerHTML = '';
+          data.forEach(category => {
+              const li = document.createElement('li');
+              const button = document.createElement('button');
+              button.className = 'category-btn';
+              button.textContent = category.category_name;
+              button.addEventListener('click', () => {
+                  loadItems(category.id);
+                  setActiveCategory(button);
+              });
+              li.appendChild(button);
+              categoriesList.appendChild(li);
+          });
+      })
+      .catch(error => console.error('Error loading categories:', error));
+}
+
+function setActiveCategory(button) {
+  const buttons = document.querySelectorAll('.category-btn');
+  buttons.forEach(btn => btn.classList.remove('active'));
+  button.classList.add('active');
+}
+
+function loadItems(categoryId = null) {
+  let url = 'php/get_items.php';
+  if (categoryId) {
+      url += `?category_id=${categoryId}`;
+  }
+  fetch(url)
+      .then(response => response.json())
+      .then(data => {
+          const itemsList = document.getElementById('items-list');
+          itemsList.innerHTML = '';
+          data.forEach(item => {
+              const card = document.createElement('div');
+              card.className = 'item-card';
+              card.innerHTML = `
+                  <img src='uploads/${item.image}' alt='${item.product_name}' class='item-image'>
+                  <div class='item-details'>
+                      <h3>${item.product_name}</h3>
+                      <p>Price: ₱${item.price}</p>
+                  </div>
+              `;
+              if (item.stock <= 0) {
+                  card.classList.add('out-of-stock');
+                  const overlay = document.createElement('div');
+                  overlay.className = 'overlay';
+                  overlay.textContent = 'Out of Stock';
+                  card.appendChild(overlay);
+              } else {
+                  card.addEventListener('click', () => addToBill(item.id, item.product_name, item.price, item.stock));
+              }
+              itemsList.appendChild(card);
+          });
+      })
+      .catch(error => console.error('Error loading items:', error));
+}
+
+let bill = [];
+let totalAmount = 0;
+
+function addToBill(productId, productName, price, stock) {
+  // Check if the product is already in the bill
+  const existingItem = bill.find(item => item.productId === productId);
+  if (existingItem) {
+      // Check if adding another item exceeds the stock
+      if (existingItem.quantity + 1 > stock) {
+          alert('Cannot add more items than available in stock.');
+          return;
+      }
+      existingItem.quantity += 1;
+  } else {
+      bill.push({ productId, productName, price, quantity: 1 });
+  }
+
+  updateBillDisplay();
+}
+
+function updateBillDisplay() {
+  const billList = document.getElementById('bill-list');
+  billList.innerHTML = '';
+  totalAmount = 0;
+
+  bill.forEach(item => {
+      const li = document.createElement('li');
+      li.textContent = `${item.productName} - ₱${item.price} x ${item.quantity}`;
+      billList.appendChild(li);
+      totalAmount += item.price * item.quantity;
+  });
+
+  document.getElementById('total-amount').textContent = `Total: ₱${totalAmount.toFixed(2)}`;
+}
+
+function completeSale() {
+  const formData = new FormData();
+  formData.append('bill', JSON.stringify(bill));
+
+  fetch('php/complete_sale.php', {
+      method: 'POST',
+      body: formData
+  })
+      .then(response => response.json())
+      .then(data => {
+          if (data.success) {
+              alert('Sale completed successfully');
+              bill = [];
+              totalAmount = 0;
+              document.getElementById('bill-list').innerHTML = '';
+              document.getElementById('total-amount').textContent = 'Total: ₱0.00';
+              loadItems(); // Reload items to update stock levels
+          } else {
+              alert('Error completing sale: ' + data.message);
+          }
+      })
+      .catch(error => console.error('Error completing sale:', error));
+}
