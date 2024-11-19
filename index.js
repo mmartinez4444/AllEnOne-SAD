@@ -929,6 +929,14 @@ document.addEventListener('DOMContentLoaded', function() {
   loadItems();
 
   document.getElementById('complete-sale-btn').addEventListener('click', completeSale);
+  document.getElementById('payment-method').addEventListener('change', togglePaymentDetails);
+  document.getElementById('cash-amount').addEventListener('input', updateBalance);
+  document.getElementById('gcash-amount').addEventListener('input', updateBalance);
+
+  // Close receipt modal
+  document.querySelector('.receipt-close-btn').addEventListener('click', function() {
+      document.getElementById('receipt-modal').style.display = 'none';
+  });
 });
 
 function loadCategories() {
@@ -937,6 +945,19 @@ function loadCategories() {
       .then(data => {
           const categoriesList = document.getElementById('categories-list');
           categoriesList.innerHTML = '';
+
+          // Add "All Categories" option
+          const allCategoriesLi = document.createElement('li');
+          const allCategoriesButton = document.createElement('button');
+          allCategoriesButton.className = 'category-btn';
+          allCategoriesButton.textContent = 'All Categories';
+          allCategoriesButton.addEventListener('click', () => {
+              loadItems();
+              setActiveCategory(allCategoriesButton);
+          });
+          allCategoriesLi.appendChild(allCategoriesButton);
+          categoriesList.appendChild(allCategoriesLi);
+
           data.forEach(category => {
               const li = document.createElement('li');
               const button = document.createElement('button');
@@ -998,10 +1019,8 @@ let bill = [];
 let totalAmount = 0;
 
 function addToBill(productId, productName, price, stock) {
-  // Check if the product is already in the bill
   const existingItem = bill.find(item => item.productId === productId);
   if (existingItem) {
-      // Check if adding another item exceeds the stock
       if (existingItem.quantity + 1 > stock) {
           alert('Cannot add more items than available in stock.');
           return;
@@ -1019,36 +1038,153 @@ function updateBillDisplay() {
   billList.innerHTML = '';
   totalAmount = 0;
 
-  bill.forEach(item => {
-      const li = document.createElement('li');
-      li.textContent = `${item.productName} - ₱${item.price} x ${item.quantity}`;
-      billList.appendChild(li);
+  bill.forEach((item, index) => {
+      const row = document.createElement('tr');
+      row.innerHTML = `
+          <td>${item.productName}</td>
+          <td><input type="number" class="bill-item-qty" value="${item.quantity}" min="1" data-index="${index}"></td>
+          <td>₱${item.price}</td>
+          <td><button class="remove-item-btn" data-index="${index}">x</button></td>
+      `;
+      billList.appendChild(row);
       totalAmount += item.price * item.quantity;
   });
 
-  document.getElementById('total-amount').textContent = `Total: ₱${totalAmount.toFixed(2)}`;
+  document.getElementById('total-amount').textContent = `₱${totalAmount.toFixed(2)}`;
+  updateBalance();
+
+  // Add event listeners for quantity change and remove buttons
+  document.querySelectorAll('.bill-item-qty').forEach(input => {
+      input.addEventListener('input', updateQuantity);
+  });
+  document.querySelectorAll('.remove-item-btn').forEach(button => {
+      button.addEventListener('click', removeFromBill);
+  });
+}
+
+function updateQuantity(event) {
+  const index = event.target.dataset.index;
+  const newQuantity = parseInt(event.target.value);
+  if (newQuantity > 0) {
+      bill[index].quantity = newQuantity;
+      updateBillDisplay();
+  }
+}
+
+function removeFromBill(event) {
+  const index = event.target.dataset.index;
+  bill.splice(index, 1);
+  updateBillDisplay();
+}
+
+function togglePaymentDetails() {
+  const paymentMethod = document.getElementById('payment-method').value;
+  const gcashDetails = document.getElementById('gcash-details');
+  const cashAmount = document.getElementById('cash-amount');
+
+  if (paymentMethod === 'gcash') {
+      gcashDetails.style.display = 'block';
+      cashAmount.parentElement.style.display = 'none';
+  } else {
+      gcashDetails.style.display = 'none';
+      cashAmount.parentElement.style.display = 'block';
+  }
+}
+
+function updateBalance() {
+  const paymentMethod = document.getElementById('payment-method').value;
+  let paidAmount = 0;
+
+  if (paymentMethod === 'gcash') {
+      paidAmount = parseFloat(document.getElementById('gcash-amount').value) || 0;
+  } else {
+      paidAmount = parseFloat(document.getElementById('cash-amount').value) || 0;
+  }
+
+  const balance = paidAmount - totalAmount;
+  document.getElementById('balance-amount').textContent = `₱${balance.toFixed(2)}`;
 }
 
 function completeSale() {
-  const formData = new FormData();
-  formData.append('bill', JSON.stringify(bill));
-
-  fetch('php/complete_sale.php', {
-      method: 'POST',
-      body: formData
-  })
+  fetch('php/get_current_user.php')
       .then(response => response.json())
       .then(data => {
           if (data.success) {
-              alert('Sale completed successfully');
-              bill = [];
-              totalAmount = 0;
-              document.getElementById('bill-list').innerHTML = '';
-              document.getElementById('total-amount').textContent = 'Total: ₱0.00';
-              loadItems(); // Reload items to update stock levels
+              const userId = data.userId;
+              const paymentMethod = document.getElementById('payment-method').value;
+              const cashAmount = parseFloat(document.getElementById('cash-amount').value) || 0;
+              const changeAmount = paymentMethod === 'cash' ? cashAmount - totalAmount : 0;
+
+              // Check if the balance is negative
+              if (changeAmount < 0) {
+                  alert('Insufficient cash amount. Please provide enough cash to cover the total amount.');
+                  return;
+              }
+
+              const formData = new FormData();
+              formData.append('bill', JSON.stringify(bill));
+              formData.append('payment_method', paymentMethod);
+              formData.append('cash_amount', cashAmount);
+              formData.append('gcash_number', document.getElementById('gcash-number').value);
+              formData.append('gcash_amount', document.getElementById('gcash-amount').value);
+              formData.append('gcash_notes', document.getElementById('gcash-notes').value);
+              formData.append('user_id', userId);
+              formData.append('change_amount', changeAmount);
+
+              fetch('php/complete_sale.php', {
+                  method: 'POST',
+                  body: formData
+              })
+                  .then(response => response.json())
+                  .then(data => {
+                      if (data.success) {
+                          alert('Sale completed successfully');
+                          showReceiptModal(data.saleId, data.cashierName, data.date, paymentMethod);
+                          bill = [];
+                          totalAmount = 0;
+                          document.getElementById('bill-list').innerHTML = '';
+                          document.getElementById('total-amount').textContent = '₱0.00';
+                          document.getElementById('cash-amount').value = '';
+                          document.getElementById('gcash-number').value = '';
+                          document.getElementById('gcash-amount').value = '';
+                          document.getElementById('gcash-notes').value = '';
+                          document.getElementById('balance-amount').textContent = '₱0.00';
+                          loadItems(); // Reload items to update stock levels
+                      } else {
+                          alert('Error completing sale: ' + data.message);
+                      }
+                  })
+                  .catch(error => console.error('Error completing sale:', error));
           } else {
-              alert('Error completing sale: ' + data.message);
+              alert('Error fetching current user: ' + data.message);
           }
       })
-      .catch(error => console.error('Error completing sale:', error));
+      .catch(error => console.error('Error fetching current user:', error));
+}
+
+function showReceiptModal(saleId, cashierName, date, paymentMethod) {
+  document.getElementById('sale-id').textContent = saleId;
+  document.getElementById('cashier-name').textContent = cashierName;
+  document.getElementById('sale-date').textContent = date;
+  document.getElementById('payment-mode').textContent = paymentMethod;
+
+  const receiptList = document.getElementById('receipt-list');
+  receiptList.innerHTML = '';
+  let totalQty = 0;
+
+  bill.forEach(item => {
+      const row = document.createElement('tr');
+      row.innerHTML = `
+          <td>${item.productName}</td>
+          <td>${item.quantity}</td>
+          <td>₱${item.price}</td>
+      `;
+      receiptList.appendChild(row);
+      totalQty += item.quantity;
+  });
+
+  document.getElementById('receipt-total').textContent = `₱${totalAmount.toFixed(2)}`;
+  document.getElementById('receipt-qty-total').textContent = totalQty;
+
+  document.getElementById('receipt-modal').style.display = 'block';
 }

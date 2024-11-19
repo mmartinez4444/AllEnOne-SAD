@@ -460,26 +460,99 @@ if ($result->num_rows > 0) {
 
 
 <div id="pos" class="content-section" style="display: none;">
-        <div class="pos-container" style="display: flex; flex-direction: row;">
-            <!-- Section 1: Categories -->
-            <div id="categories-section" class="pos-section">
-                <h2>Categories</h2>
-                <ul id="categories-list"></ul>
-            </div>
-            <!-- Section 2: Items -->
-            <div id="items-section" class="pos-section">
-                <h2>Items</h2>
-                <div id="items-list" class="items-container"></div>
-            </div>
-            <!-- Section 3: Bill -->
-            <div id="bill-section" class="pos-section">
-                <h2>Bill</h2>
-                <ul id="bill-list"></ul>
-                <div id="total-amount">Total: ₱0.00</div>
+    <div class="pos-container" style="display: flex; flex-direction: row;">
+        <!-- Section 1: Categories -->
+        <div id="categories-section" class="pos-section">
+            <h2>Categories</h2>
+            <ul id="categories-list"></ul>
+        </div>
+        <!-- Section 2: Items -->
+        <div id="items-section" class="pos-section">
+            <h2>Items</h2>
+            <div id="items-list" class="items-container"></div>
+        </div>
+        <!-- Section 3: Bill -->
+        <div id="bill-section" class="pos-section">
+            <h2>Bill</h2>
+            <table id="bill-table">
+                <thead>
+                    <tr>
+                        <th>Description</th>
+                        <th>Qty</th>
+                        <th>Price</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody id="bill-list"></tbody>
+            </table>
+            <div class="bill-summary">
+                <div class="bill-summary-item">
+                    <span>Total:</span>
+                    <span id="total-amount">₱0.00</span>
+                </div>
+                <div class="bill-summary-item">
+                    <label for="cash-amount">Cash:</label>
+                    <input type="number" id="cash-amount" class="cash-input">
+                </div>
+                <div class="bill-summary-item">
+                    <span>Balance:</span>
+                    <span id="balance-amount">₱0.00</span>
+                </div>
+                <div class="bill-summary-item">
+                    <label for="payment-method">Payment Method:</label>
+                    <select id="payment-method">
+                        <option value="cash">Cash</option>
+                        <option value="gcash">GCash</option>
+                    </select>
+                </div>
+                <div id="gcash-details" style="display: none;">
+                    <label for="gcash-number">Reference Number:</label>
+                    <input type="text" id="gcash-number">
+                    <label for="gcash-amount">Amount Paid:</label>
+                    <input type="number" id="gcash-amount">
+                    <label for="gcash-notes">Notes:</label>
+                    <textarea id="gcash-notes"></textarea>
+                </div>
                 <button id="complete-sale-btn">Complete Sale</button>
             </div>
         </div>
     </div>
+</div>
+
+<!-- Receipt Modal -->
+<div id="receipt-modal" class="receipt-modal">
+    <div class="receipt-modal-content">
+        <span class="receipt-close-btn">&times;</span>
+        <div class="receipt-header">
+            <h2>AllEnOne Store</h2>
+            <p>Address: 123 Main St, City, Country</p>
+            <p>Tel: (123) 456-7890</p>
+        </div>
+        <div class="receipt-body">
+            <p>Cashier: <span id="cashier-name"></span></p>
+            <p>ID: <span id="sale-id"></span></p>
+            <p>Date: <span id="sale-date"></span></p>
+            <p>Mode of Payment: <span id="payment-mode"></span></p>
+            <table id="receipt-table">
+                <thead>
+                    <tr>
+                        <th>Description</th>
+                        <th>Qty</th>
+                        <th>Price</th>
+                    </tr>
+                </thead>
+                <tbody id="receipt-list"></tbody>
+            </table>
+            <div class="receipt-summary">
+                <p>Total: <span id="receipt-total"></span></p>
+                <p>Qty Total: <span id="receipt-qty-total"></span></p>
+            </div>
+        </div>
+        <div class="receipt-footer">
+            <p>Thank you, come again!</p>
+        </div>
+    </div>
+</div>
 
 
         <div id="sales" class="content-section" style="display: none;">
