@@ -1510,7 +1510,7 @@ table th {
 .receipt-modal {
     display: none;
     position: fixed;
-    z-index: 1;
+    z-index: 1000; /* Ensure it is above other content */
     left: 0;
     top: 0;
     width: 100%;
@@ -1521,13 +1521,19 @@ table th {
 
 .receipt-modal-content {
     background-color: #fefefe;
-    margin: 15% auto;
+    margin: 5% auto;
     padding: 20px;
     border: 1px solid #888;
-    width: 80%;
-    max-width: 600px;
+    width: 90mm; /* Increase width to ensure address fits on one line */
+    max-width: 90mm; /* Ensure it doesn't exceed typical receipt paper size */
     border-radius: 8px;
     text-align: center;
+}
+
+.receipt-logo {
+    max-width: 66%;
+    height: auto;
+    margin-bottom: 10px;
 }
 
 .receipt-close-btn {
@@ -1545,6 +1551,11 @@ table th {
 }
 
 .receipt-header h2 {
+    margin: 0;
+    font-weight: bold;
+}
+
+.receipt-header p {
     margin: 0;
 }
 
@@ -1573,7 +1584,44 @@ table th {
     margin-top: 20px;
 }
 
+.summary-item {
+    display: flex;
+    justify-content: space-between;
+    margin: 5px 0;
+}
+
 .receipt-footer {
     margin-top: 20px;
     font-weight: bold;
 }
+
+/* Hide elements during printing */
+@media print {
+    .receipt-modal-content {
+        width: 100%;
+        border: none;
+        box-shadow: none;
+    }
+
+    .receipt-close-btn {
+        display: none;
+    }
+
+    body * {
+        visibility: hidden;
+    }
+
+    .receipt-modal,
+    .receipt-modal * {
+        visibility: visible;
+    }
+
+    .receipt-modal {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+    }
+}
+

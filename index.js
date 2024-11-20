@@ -925,266 +925,331 @@ document.addEventListener('DOMContentLoaded', function() {
 // POS SHits
 
 document.addEventListener('DOMContentLoaded', function() {
-  loadCategories();
-  loadItems();
+    loadCategories();
+    loadItems();
 
-  document.getElementById('complete-sale-btn').addEventListener('click', completeSale);
-  document.getElementById('payment-method').addEventListener('change', togglePaymentDetails);
-  document.getElementById('cash-amount').addEventListener('input', updateBalance);
-  document.getElementById('gcash-amount').addEventListener('input', updateBalance);
+    document.getElementById('complete-sale-btn').addEventListener('click', completeSale);
+    document.getElementById('payment-method').addEventListener('change', togglePaymentDetails);
+    document.getElementById('cash-amount').addEventListener('input', updateBalance);
+    document.getElementById('gcash-amount').addEventListener('input', updateBalance);
 
-  // Close receipt modal
-  document.querySelector('.receipt-close-btn').addEventListener('click', function() {
-      document.getElementById('receipt-modal').style.display = 'none';
-  });
+    // Close receipt modal
+    document.querySelector('.receipt-close-btn').addEventListener('click', function() {
+        document.getElementById('receipt-modal').style.display = 'none';
+    });
+
+    // GCash Cash In and Cash Out
+    document.getElementById('gcash-cash-in-btn').addEventListener('click', function() {
+        handleGcashTransaction('cash-in');
+    });
+    document.getElementById('gcash-cash-out-btn').addEventListener('click', function() {
+        handleGcashTransaction('cash-out');
+    });
 });
 
 function loadCategories() {
-  fetch('php/get_categories.php')
-      .then(response => response.json())
-      .then(data => {
-          const categoriesList = document.getElementById('categories-list');
-          categoriesList.innerHTML = '';
+    fetch('php/get_categories.php')
+        .then(response => response.json())
+        .then(data => {
+            const categoriesList = document.getElementById('categories-list');
+            categoriesList.innerHTML = '';
 
-          // Add "All Categories" option
-          const allCategoriesLi = document.createElement('li');
-          const allCategoriesButton = document.createElement('button');
-          allCategoriesButton.className = 'category-btn';
-          allCategoriesButton.textContent = 'All Categories';
-          allCategoriesButton.addEventListener('click', () => {
-              loadItems();
-              setActiveCategory(allCategoriesButton);
-          });
-          allCategoriesLi.appendChild(allCategoriesButton);
-          categoriesList.appendChild(allCategoriesLi);
+            // Add "All Categories" option
+            const allCategoriesLi = document.createElement('li');
+            const allCategoriesButton = document.createElement('button');
+            allCategoriesButton.className = 'category-btn';
+            allCategoriesButton.textContent = 'All Categories';
+            allCategoriesButton.addEventListener('click', () => {
+                loadItems();
+                setActiveCategory(allCategoriesButton);
+                document.querySelectorAll('.gcash-option').forEach(option => option.style.display = 'none');
+                document.querySelectorAll('.gcash-only').forEach(element => element.style.display = 'table-cell');
+                document.getElementById('gcash-details').style.display = 'none';
+            });
+            allCategoriesLi.appendChild(allCategoriesButton);
+            categoriesList.appendChild(allCategoriesLi);
 
-          data.forEach(category => {
-              const li = document.createElement('li');
-              const button = document.createElement('button');
-              button.className = 'category-btn';
-              button.textContent = category.category_name;
-              button.addEventListener('click', () => {
-                  loadItems(category.id);
-                  setActiveCategory(button);
-              });
-              li.appendChild(button);
-              categoriesList.appendChild(li);
-          });
-      })
-      .catch(error => console.error('Error loading categories:', error));
+            data.forEach(category => {
+                const li = document.createElement('li');
+                const button = document.createElement('button');
+                button.className = 'category-btn';
+                button.textContent = category.category_name;
+                button.addEventListener('click', () => {
+                    loadItems(category.id);
+                    setActiveCategory(button);
+                    if (category.category_name === 'GCash') {
+                        document.querySelectorAll('.gcash-option').forEach(option => option.style.display = 'block');
+                        document.querySelectorAll('.gcash-only').forEach(element => element.style.display = 'none');
+                        document.getElementById('gcash-details').style.display = 'block';
+                    } else {
+                        document.querySelectorAll('.gcash-option').forEach(option => option.style.display = 'none');
+                        document.querySelectorAll('.gcash-only').forEach(element => element.style.display = 'table-cell');
+                        document.getElementById('gcash-details').style.display = 'none';
+                    }
+                });
+                li.appendChild(button);
+                categoriesList.appendChild(li);
+            });
+        })
+        .catch(error => console.error('Error loading categories:', error));
 }
 
 function setActiveCategory(button) {
-  const buttons = document.querySelectorAll('.category-btn');
-  buttons.forEach(btn => btn.classList.remove('active'));
-  button.classList.add('active');
+    const buttons = document.querySelectorAll('.category-btn');
+    buttons.forEach(btn => btn.classList.remove('active'));
+    button.classList.add('active');
 }
 
 function loadItems(categoryId = null) {
-  let url = 'php/get_items.php';
-  if (categoryId) {
-      url += `?category_id=${categoryId}`;
-  }
-  fetch(url)
-      .then(response => response.json())
-      .then(data => {
-          const itemsList = document.getElementById('items-list');
-          itemsList.innerHTML = '';
-          data.forEach(item => {
-              const card = document.createElement('div');
-              card.className = 'item-card';
-              card.innerHTML = `
-                  <img src='uploads/${item.image}' alt='${item.product_name}' class='item-image'>
-                  <div class='item-details'>
-                      <h3>${item.product_name}</h3>
-                      <p>Price: ₱${item.price}</p>
-                  </div>
-              `;
-              if (item.stock <= 0) {
-                  card.classList.add('out-of-stock');
-                  const overlay = document.createElement('div');
-                  overlay.className = 'overlay';
-                  overlay.textContent = 'Out of Stock';
-                  card.appendChild(overlay);
-              } else {
-                  card.addEventListener('click', () => addToBill(item.id, item.product_name, item.price, item.stock));
-              }
-              itemsList.appendChild(card);
-          });
-      })
-      .catch(error => console.error('Error loading items:', error));
+    let url = 'php/get_items.php';
+    if (categoryId) {
+        url += `?category_id=${categoryId}`;
+    }
+    fetch(url)
+        .then(response => response.json())
+        .then(data => {
+            const itemsList = document.getElementById('items-list');
+            itemsList.innerHTML = '';
+            data.forEach(item => {
+                const card = document.createElement('div');
+                card.className = 'item-card';
+                card.innerHTML = `
+                    <img src='uploads/${item.image}' alt='${item.product_name}' class='item-image'>
+                    <div class='item-details'>
+                        <h3>${item.product_name}</h3>
+                        <p>Price: ₱${item.price}</p>
+                    </div>
+                `;
+                if (item.stock <= 0) {
+                    card.classList.add('out-of-stock');
+                    const overlay = document.createElement('div');
+                    overlay.className = 'overlay';
+                    overlay.textContent = 'Out of Stock';
+                    card.appendChild(overlay);
+                } else {
+                    card.addEventListener('click', () => addToBill(item.id, item.product_name, item.price, item.stock));
+                }
+                itemsList.appendChild(card);
+            });
+        })
+        .catch(error => console.error('Error loading items:', error));
 }
 
 let bill = [];
 let totalAmount = 0;
 
 function addToBill(productId, productName, price, stock) {
-  const existingItem = bill.find(item => item.productId === productId);
-  if (existingItem) {
-      if (existingItem.quantity + 1 > stock) {
-          alert('Cannot add more items than available in stock.');
-          return;
-      }
-      existingItem.quantity += 1;
-  } else {
-      bill.push({ productId, productName, price, quantity: 1 });
-  }
+    const existingItem = bill.find(item => item.productId === productId);
+    if (existingItem) {
+        if (existingItem.quantity + 1 > stock) {
+            alert('Cannot add more items than available in stock.');
+            return;
+        }
+        existingItem.quantity += 1;
+    } else {
+        bill.push({ productId, productName, price, quantity: 1 });
+    }
 
-  updateBillDisplay();
+    updateBillDisplay();
 }
 
 function updateBillDisplay() {
-  const billList = document.getElementById('bill-list');
-  billList.innerHTML = '';
-  totalAmount = 0;
+    const billList = document.getElementById('bill-list');
+    billList.innerHTML = '';
+    totalAmount = 0;
 
-  bill.forEach((item, index) => {
-      const row = document.createElement('tr');
-      row.innerHTML = `
-          <td>${item.productName}</td>
-          <td><input type="number" class="bill-item-qty" value="${item.quantity}" min="1" data-index="${index}"></td>
-          <td>₱${item.price}</td>
-          <td><button class="remove-item-btn" data-index="${index}">x</button></td>
-      `;
-      billList.appendChild(row);
-      totalAmount += item.price * item.quantity;
-  });
+    bill.forEach((item, index) => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${item.productName}</td>
+            <td class="gcash-only"><input type="number" class="bill-item-qty" value="${item.quantity}" min="1" data-index="${index}"></td>
+            <td class="gcash-only">₱${item.price}</td>
+            <td><button class="remove-item-btn" data-index="${index}">x</button></td>
+        `;
+        billList.appendChild(row);
+        totalAmount += item.price * item.quantity;
+    });
 
-  document.getElementById('total-amount').textContent = `₱${totalAmount.toFixed(2)}`;
-  updateBalance();
+    document.getElementById('total-amount').textContent = `₱${totalAmount.toFixed(2)}`;
+    updateBalance();
 
-  // Add event listeners for quantity change and remove buttons
-  document.querySelectorAll('.bill-item-qty').forEach(input => {
-      input.addEventListener('input', updateQuantity);
-  });
-  document.querySelectorAll('.remove-item-btn').forEach(button => {
-      button.addEventListener('click', removeFromBill);
-  });
+    // Add event listeners for quantity change and remove buttons
+    document.querySelectorAll('.bill-item-qty').forEach(input => {
+        input.addEventListener('input', updateQuantity);
+    });
+    document.querySelectorAll('.remove-item-btn').forEach(button => {
+        button.addEventListener('click', removeFromBill);
+    });
 }
 
 function updateQuantity(event) {
-  const index = event.target.dataset.index;
-  const newQuantity = parseInt(event.target.value);
-  if (newQuantity > 0) {
-      bill[index].quantity = newQuantity;
-      updateBillDisplay();
-  }
+    const index = event.target.dataset.index;
+    const newQuantity = parseInt(event.target.value);
+    if (newQuantity > 0) {
+        bill[index].quantity = newQuantity;
+        updateBillDisplay();
+    }
 }
 
 function removeFromBill(event) {
-  const index = event.target.dataset.index;
-  bill.splice(index, 1);
-  updateBillDisplay();
+    const index = event.target.dataset.index;
+    bill.splice(index, 1);
+    updateBillDisplay();
 }
 
 function togglePaymentDetails() {
-  const paymentMethod = document.getElementById('payment-method').value;
-  const gcashDetails = document.getElementById('gcash-details');
-  const cashAmount = document.getElementById('cash-amount');
+    const paymentMethod = document.getElementById('payment-method').value;
+    const gcashDetails = document.getElementById('gcash-details');
+    const cashAmount = document.getElementById('cash-amount');
 
-  if (paymentMethod === 'gcash') {
-      gcashDetails.style.display = 'block';
-      cashAmount.parentElement.style.display = 'none';
-  } else {
-      gcashDetails.style.display = 'none';
-      cashAmount.parentElement.style.display = 'block';
-  }
+    if (paymentMethod === 'gcash' || paymentMethod === 'gcash-cash-in' || paymentMethod === 'gcash-cash-out') {
+        gcashDetails.style.display = 'block';
+        cashAmount.parentElement.style.display = 'none';
+    } else {
+        gcashDetails.style.display = 'none';
+        cashAmount.parentElement.style.display = 'block';
+    }
 }
 
 function updateBalance() {
-  const paymentMethod = document.getElementById('payment-method').value;
-  let paidAmount = 0;
+    const paymentMethod = document.getElementById('payment-method').value;
+    let paidAmount = 0;
 
-  if (paymentMethod === 'gcash') {
-      paidAmount = parseFloat(document.getElementById('gcash-amount').value) || 0;
-  } else {
-      paidAmount = parseFloat(document.getElementById('cash-amount').value) || 0;
-  }
+    if (paymentMethod === 'gcash' || paymentMethod === 'gcash-cash-in' || paymentMethod === 'gcash-cash-out') {
+        paidAmount = parseFloat(document.getElementById('gcash-amount').value) || 0;
+    } else {
+        paidAmount = parseFloat(document.getElementById('cash-amount').value) || 0;
+    }
 
-  const balance = paidAmount - totalAmount;
-  document.getElementById('balance-amount').textContent = `₱${balance.toFixed(2)}`;
+    const balance = paidAmount - totalAmount;
+    document.getElementById('balance-amount').textContent = `₱${balance.toFixed(2)}`;
 }
 
 function completeSale() {
-  fetch('php/get_current_user.php')
-      .then(response => response.json())
-      .then(data => {
-          if (data.success) {
-              const userId = data.userId;
-              const paymentMethod = document.getElementById('payment-method').value;
-              const cashAmount = parseFloat(document.getElementById('cash-amount').value) || 0;
-              const changeAmount = paymentMethod === 'cash' ? cashAmount - totalAmount : 0;
+    fetch('php/get_current_user.php')
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const userId = data.userId;
+                const paymentMethod = document.getElementById('payment-method').value;
+                const cashAmount = parseFloat(document.getElementById('cash-amount').value) || 0;
+                const gcashAmount = parseFloat(document.getElementById('gcash-amount').value) || 0;
+                const changeAmount = paymentMethod === 'cash' ? cashAmount - totalAmount : 0;
 
-              // Check if the balance is negative
-              if (changeAmount < 0) {
-                  alert('Insufficient cash amount. Please provide enough cash to cover the total amount.');
-                  return;
-              }
+                // Check if the balance is negative
+                if (changeAmount < 0) {
+                    alert('Insufficient cash amount. Please provide enough cash to cover the total amount.');
+                    return;
+                }
 
-              const formData = new FormData();
-              formData.append('bill', JSON.stringify(bill));
-              formData.append('payment_method', paymentMethod);
-              formData.append('cash_amount', cashAmount);
-              formData.append('gcash_number', document.getElementById('gcash-number').value);
-              formData.append('gcash_amount', document.getElementById('gcash-amount').value);
-              formData.append('gcash_notes', document.getElementById('gcash-notes').value);
-              formData.append('user_id', userId);
-              formData.append('change_amount', changeAmount);
+                const formData = new FormData();
+                formData.append('bill', JSON.stringify(bill));
+                formData.append('payment_method', paymentMethod);
+                formData.append('cash_amount', cashAmount);
+                formData.append('gcash_number', document.getElementById('gcash-number').value);
+                formData.append('gcash_amount', gcashAmount);
+                formData.append('gcash_notes', document.getElementById('gcash-notes').value);
+                formData.append('user_id', userId);
+                formData.append('change_amount', changeAmount);
 
-              fetch('php/complete_sale.php', {
-                  method: 'POST',
-                  body: formData
-              })
-                  .then(response => response.json())
-                  .then(data => {
-                      if (data.success) {
-                          alert('Sale completed successfully');
-                          showReceiptModal(data.saleId, data.cashierName, data.date, paymentMethod);
-                          bill = [];
-                          totalAmount = 0;
-                          document.getElementById('bill-list').innerHTML = '';
-                          document.getElementById('total-amount').textContent = '₱0.00';
-                          document.getElementById('cash-amount').value = '';
-                          document.getElementById('gcash-number').value = '';
-                          document.getElementById('gcash-amount').value = '';
-                          document.getElementById('gcash-notes').value = '';
-                          document.getElementById('balance-amount').textContent = '₱0.00';
-                          loadItems(); // Reload items to update stock levels
-                      } else {
-                          alert('Error completing sale: ' + data.message);
-                      }
-                  })
-                  .catch(error => console.error('Error completing sale:', error));
-          } else {
-              alert('Error fetching current user: ' + data.message);
-          }
-      })
-      .catch(error => console.error('Error fetching current user:', error));
+                fetch('php/complete_sale.php', {
+                    method: 'POST',
+                    body: formData
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            alert('Sale completed successfully');
+                            showReceiptModal(data.saleId, data.cashierName, data.date, paymentMethod);
+                            bill = [];
+                            totalAmount = 0;
+                            document.getElementById('bill-list').innerHTML = '';
+                            document.getElementById('total-amount').textContent = '₱0.00';
+                            document.getElementById('cash-amount').value = '';
+                            document.getElementById('gcash-number').value = '';
+                            document.getElementById('gcash-amount').value = '';
+                            document.getElementById('gcash-notes').value = '';
+                            document.getElementById('balance-amount').textContent = '₱0.00';
+                            loadItems(); // Reload items to update stock levels
+                        } else {
+                            alert('Error completing sale: ' + data.message);
+                        }
+                    })
+                    .catch(error => console.error('Error completing sale:', error));
+            } else {
+                alert('Error fetching current user: ' + data.message);
+            }
+        })
+        .catch(error => console.error('Error fetching current user:', error));
 }
 
 function showReceiptModal(saleId, cashierName, date, paymentMethod) {
-  document.getElementById('sale-id').textContent = saleId;
-  document.getElementById('cashier-name').textContent = cashierName;
-  document.getElementById('sale-date').textContent = date;
-  document.getElementById('payment-mode').textContent = paymentMethod;
+    document.getElementById('sale-id').textContent = saleId;
+    document.getElementById('cashier-name').textContent = cashierName;
+    document.getElementById('sale-date').textContent = date;
+    document.getElementById('payment-mode').textContent = paymentMethod;
 
-  const receiptList = document.getElementById('receipt-list');
-  receiptList.innerHTML = '';
-  let totalQty = 0;
+    const receiptList = document.getElementById('receipt-list');
+    receiptList.innerHTML = '';
+    let totalQty = 0;
 
-  bill.forEach(item => {
-      const row = document.createElement('tr');
-      row.innerHTML = `
-          <td>${item.productName}</td>
-          <td>${item.quantity}</td>
-          <td>₱${item.price}</td>
-      `;
-      receiptList.appendChild(row);
-      totalQty += item.quantity;
-  });
+    bill.forEach(item => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${item.productName}</td>
+            <td>${item.quantity}</td>
+            <td>₱${item.price}</td>
+        `;
+        receiptList.appendChild(row);
+        totalQty += item.quantity;
+    });
 
-  document.getElementById('receipt-total').textContent = `₱${totalAmount.toFixed(2)}`;
-  document.getElementById('receipt-qty-total').textContent = totalQty;
+    document.getElementById('receipt-total').textContent = `₱${totalAmount.toFixed(2)}`;
+    document.getElementById('receipt-qty-total').textContent = totalQty;
 
-  document.getElementById('receipt-modal').style.display = 'block';
+    document.getElementById('receipt-modal').style.display = 'block';
+
+    // Automatically trigger the print dialog
+    setTimeout(() => {
+        window.print();
+    }, 500); // Delay to ensure the modal is fully rendered before printing
+}
+
+function handleGcashTransaction(type) {
+    const amount = parseFloat(document.getElementById('gcash-amount').value) || 0;
+    if (amount <= 0) {
+        alert('Please enter a valid amount.');
+        return;
+    }
+
+    if (type === 'cash-in') {
+        // Deduct from stock
+        updateInventoryStock(amount, 'deduct');
+    } else if (type === 'cash-out') {
+        // Add to stock
+        updateInventoryStock(amount, 'add');
+    }
+
+    document.getElementById('gcash-amount').value = '';
+}
+
+function updateInventoryStock(amount, action) {
+    const formData = new FormData();
+    formData.append('amount', amount);
+    formData.append('action', action);
+
+    fetch('php/update_inventory.php', {
+        method: 'POST',
+        body: formData
+    })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Inventory updated successfully');
+                loadItems(); // Reload items to update stock levels
+            } else {
+                alert('Error updating inventory: ' + data.message);
+            }
+        })
+        .catch(error => console.error('Error updating inventory:', error));
 }

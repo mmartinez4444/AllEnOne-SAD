@@ -3,19 +3,38 @@ include 'connect.php';
 
 $product_id = $_GET['id'];
 
-$sql = "DELETE FROM inventory WHERE id = ?";
-$stmt = $conn->prepare($sql);
-$stmt->bind_param("i", $product_id);
+// Start a transaction
+$conn->begin_transaction();
 
-$response = [];
-if ($stmt->execute()) {
+try {
+    // Delete related sales records
+    $sql = "DELETE FROM sales WHERE product_id = ?";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("i", $product_id);
+    if (!$stmt->execute()) {
+        throw new Exception($stmt->error);
+    }
+    $stmt->close();
+
+    // Delete the product from inventory
+    $sql = "DELETE FROM inventory WHERE id = ?";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("i", $product_id);
+    if (!$stmt->execute()) {
+        throw new Exception($stmt->error);
+    }
+    $stmt->close();
+
+    // Commit the transaction
+    $conn->commit();
     $response['success'] = true;
-} else {
+} catch (Exception $e) {
+    // Rollback the transaction on error
+    $conn->rollback();
     $response['success'] = false;
-    $response['message'] = $stmt->error;
+    $response['message'] = $e->getMessage();
 }
 
-$stmt->close();
 $conn->close();
 
 echo json_encode($response);

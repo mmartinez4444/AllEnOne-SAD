@@ -519,14 +519,18 @@ if ($result->num_rows > 0) {
     </div>
 </div>
 
+
+
 <!-- Receipt Modal -->
 <div id="receipt-modal" class="receipt-modal">
     <div class="receipt-modal-content">
         <span class="receipt-close-btn">&times;</span>
         <div class="receipt-header">
+            <img src="assets/AllEnOne-orig.png" alt="AllEnOne Store Logo" class="receipt-logo">
             <h2>AllEnOne Store</h2>
             <p>Address: 123 Main St, City, Country</p>
             <p>Tel: (123) 456-7890</p>
+            <p>VAT REG TIN: 123-456-789-123</p>
         </div>
         <div class="receipt-body">
             <p>Cashier: <span id="cashier-name"></span></p>
@@ -544,8 +548,8 @@ if ($result->num_rows > 0) {
                 <tbody id="receipt-list"></tbody>
             </table>
             <div class="receipt-summary">
-                <p>Total: <span id="receipt-total"></span></p>
-                <p>Qty Total: <span id="receipt-qty-total"></span></p>
+                <p class="summary-item"><span>Qty Total:</span><span id="receipt-qty-total"></span></p>
+                <p class="summary-item"><span>Total:</span><span id="receipt-total"></span></p>
             </div>
         </div>
         <div class="receipt-footer">
@@ -553,6 +557,7 @@ if ($result->num_rows > 0) {
         </div>
     </div>
 </div>
+
 
 
         <div id="sales" class="content-section" style="display: none;">

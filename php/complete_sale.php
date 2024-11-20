@@ -39,7 +39,13 @@ foreach ($bill as $item) {
     $sale_id = $stmt->insert_id;
 
     // Update inventory stock
-    $sql = "UPDATE inventory SET stock = stock - ? WHERE id = ?";
+    if ($payment_method === 'gcash-cash-in') {
+        $sql = "UPDATE inventory SET stock = stock + ? WHERE id = ?";
+    } else if ($payment_method === 'gcash-cash-out') {
+        $sql = "UPDATE inventory SET stock = stock - ? WHERE id = ?";
+    } else {
+        $sql = "UPDATE inventory SET stock = stock - ? WHERE id = ?";
+    }
     $stmt = $conn->prepare($sql);
     if (!$stmt) {
         echo json_encode(['success' => false, 'message' => 'Prepare failed: ' . $conn->error]);
@@ -54,7 +60,7 @@ foreach ($bill as $item) {
     }
 
     // Insert GCASH transaction if applicable
-    if ($payment_method === 'gcash') {
+    if ($payment_method === 'gcash' || $payment_method === 'gcash-cash-in' || $payment_method === 'gcash-cash-out') {
         $sql = "INSERT INTO gcash_transactions (sale_id, gcash_number, amount, notes) VALUES (?, ?, ?, ?)";
         $stmt = $conn->prepare($sql);
         if (!$stmt) {
@@ -71,6 +77,20 @@ foreach ($bill as $item) {
     }
 }
 
+// Get sale date
+$sql = "SELECT sale_date FROM sales WHERE id = ?";
+$stmt = $conn->prepare($sql);
+if (!$stmt) {
+    echo json_encode(['success' => false, 'message' => 'Prepare failed: ' . $conn->error]);
+    $conn->close();
+    exit();
+}
+$stmt->bind_param("i", $sale_id);
+$stmt->execute();
+$stmt->bind_result($sale_date);
+$stmt->fetch();
+$stmt->close();
+
 // Get cashier name
 $sql = "SELECT first_name, last_name FROM users WHERE id = ?";
 $stmt = $conn->prepare($sql);
@@ -84,8 +104,9 @@ $stmt->execute();
 $stmt->bind_result($first_name, $last_name);
 $stmt->fetch();
 $cashier_name = $first_name . ' ' . $last_name;
+$stmt->close();
 
-echo json_encode(['success' => true, 'saleId' => $sale_id, 'cashierName' => $cashier_name, 'date' => date('Y-m-d H:i:s')]);
+echo json_encode(['success' => true, 'saleId' => $sale_id, 'cashierName' => $cashier_name, 'date' => $sale_date]);
 
 $conn->close();
 ?>
