@@ -871,6 +871,54 @@ document.getElementById('editInventoryProductForm').addEventListener('submit', f
 });
 
 
+// Function to open the Inventory GCash modal
+function openInventoryGcashModal() {
+  fetch('php/get_gcash_balance.php')
+      .then(response => response.json())
+      .then(data => {
+          document.getElementById('inventoryGcashBalance').innerText = `Balance: ₱${data.balance}`;
+          document.getElementById('inventoryGcashModal').style.display = 'block';
+      })
+      .catch(error => console.error('Error fetching GCash balance:', error));
+}
+
+// Function to close the Inventory GCash modal
+function closeInventoryGcashModal() {
+  document.getElementById('inventoryGcashModal').style.display = 'none';
+}
+
+// Function to open the edit balance form
+function openEditGcashBalanceForm() {
+  document.getElementById('editGcashBalanceForm').style.display = 'block';
+}
+
+// Function to update the GCash balance
+function updateGcashBalance() {
+  const newBalance = parseFloat(document.getElementById('newGcashBalance').value);
+  if (isNaN(newBalance) || newBalance < 0) {
+      alert('Please enter a valid balance.');
+      return;
+  }
+
+  const formData = new FormData();
+  formData.append('new_balance', newBalance);
+
+  fetch('php/update_gcash_balance.php', {
+      method: 'POST',
+      body: formData
+  })
+  .then(response => response.json())
+  .then(data => {
+      if (data.success) {
+          alert('Balance updated successfully');
+          document.getElementById('inventoryGcashBalance').innerText = `Balance: ₱${newBalance.toFixed(2)}`;
+          document.getElementById('editGcashBalanceForm').style.display = 'none';
+      } else {
+          alert('Error updating balance: ' + data.message);
+      }
+  })
+  .catch(error => console.error('Error updating balance:', error));
+}
 /*  Function to search and filter inventory
 function searchInventory() {
   const input = document.getElementById('searchInventoryInput');
@@ -1126,93 +1174,95 @@ function updateBalance() {
 }
 
 function completeSale() {
-    fetch('php/get_current_user.php')
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                const userId = data.userId;
-                const paymentMethod = document.getElementById('payment-method').value;
-                const cashAmount = parseFloat(document.getElementById('cash-amount').value) || 0;
-                const gcashAmount = parseFloat(document.getElementById('gcash-amount').value) || 0;
-                const changeAmount = paymentMethod === 'cash' ? cashAmount - totalAmount : 0;
+  fetch('php/get_current_user.php')
+      .then(response => response.json())
+      .then(data => {
+          if (data.success) {
+              const userId = data.userId;
+              const paymentMethod = document.getElementById('payment-method').value;
+              const cashAmount = parseFloat(document.getElementById('cash-amount').value) || 0;
+              const gcashAmount = parseFloat(document.getElementById('gcash-amount').value) || 0;
+              const changeAmount = paymentMethod === 'cash' ? cashAmount - totalAmount : 0;
 
-                // Check if the balance is negative
-                if (changeAmount < 0) {
-                    alert('Insufficient cash amount. Please provide enough cash to cover the total amount.');
-                    return;
-                }
+              // Check if the balance is negative
+              if (changeAmount < 0) {
+                  alert('Insufficient cash amount. Please provide enough cash to cover the total amount.');
+                  return;
+              }
 
-                const formData = new FormData();
-                formData.append('bill', JSON.stringify(bill));
-                formData.append('payment_method', paymentMethod);
-                formData.append('cash_amount', cashAmount);
-                formData.append('gcash_number', document.getElementById('gcash-number').value);
-                formData.append('gcash_amount', gcashAmount);
-                formData.append('gcash_notes', document.getElementById('gcash-notes').value);
-                formData.append('user_id', userId);
-                formData.append('change_amount', changeAmount);
+              const formData = new FormData();
+              formData.append('bill', JSON.stringify(bill));
+              formData.append('payment_method', paymentMethod);
+              formData.append('cash_amount', cashAmount);
+              formData.append('gcash_number', document.getElementById('gcash-number').value);
+              formData.append('gcash_amount', gcashAmount);
+              formData.append('gcash_notes', document.getElementById('gcash-notes').value);
+              formData.append('user_id', userId);
+              formData.append('change_amount', changeAmount);
 
-                fetch('php/complete_sale.php', {
-                    method: 'POST',
-                    body: formData
-                })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            alert('Sale completed successfully');
-                            showReceiptModal(data.saleId, data.cashierName, data.date, paymentMethod);
-                            bill = [];
-                            totalAmount = 0;
-                            document.getElementById('bill-list').innerHTML = '';
-                            document.getElementById('total-amount').textContent = '₱0.00';
-                            document.getElementById('cash-amount').value = '';
-                            document.getElementById('gcash-number').value = '';
-                            document.getElementById('gcash-amount').value = '';
-                            document.getElementById('gcash-notes').value = '';
-                            document.getElementById('balance-amount').textContent = '₱0.00';
-                            loadItems(); // Reload items to update stock levels
-                        } else {
-                            alert('Error completing sale: ' + data.message);
-                        }
-                    })
-                    .catch(error => console.error('Error completing sale:', error));
-            } else {
-                alert('Error fetching current user: ' + data.message);
-            }
-        })
-        .catch(error => console.error('Error fetching current user:', error));
+              fetch('php/complete_sale.php', {
+                  method: 'POST',
+                  body: formData
+              })
+                  .then(response => response.json())
+                  .then(data => {
+                      if (data.success) {
+                          alert('Sale completed successfully');
+                          showReceiptModal(data.saleId, data.cashierName, data.date, paymentMethod, cashAmount, changeAmount);
+                          bill = [];
+                          totalAmount = 0;
+                          document.getElementById('bill-list').innerHTML = '';
+                          document.getElementById('total-amount').textContent = '₱0.00';
+                          document.getElementById('cash-amount').value = '';
+                          document.getElementById('gcash-number').value = '';
+                          document.getElementById('gcash-amount').value = '';
+                          document.getElementById('gcash-notes').value = '';
+                          document.getElementById('balance-amount').textContent = '₱0.00';
+                          loadItems(); // Reload items to update stock levels
+                      } else {
+                          alert('Error completing sale: ' + data.message);
+                      }
+                  })
+                  .catch(error => console.error('Error completing sale:', error));
+          } else {
+              alert('Error fetching current user: ' + data.message);
+          }
+      })
+      .catch(error => console.error('Error fetching current user:', error));
 }
 
-function showReceiptModal(saleId, cashierName, date, paymentMethod) {
-    document.getElementById('sale-id').textContent = saleId;
-    document.getElementById('cashier-name').textContent = cashierName;
-    document.getElementById('sale-date').textContent = date;
-    document.getElementById('payment-mode').textContent = paymentMethod;
+function showReceiptModal(saleId, cashierName, date, paymentMethod, cashAmount, changeAmount) {
+  document.getElementById('sale-id').textContent = saleId;
+  document.getElementById('cashier-name').textContent = cashierName;
+  document.getElementById('sale-date').textContent = date;
+  document.getElementById('payment-mode').textContent = paymentMethod;
+  document.getElementById('tender-amount').textContent = `₱${cashAmount.toFixed(2)}`;
+  document.getElementById('change-amount').textContent = `₱${changeAmount.toFixed(2)}`;
 
-    const receiptList = document.getElementById('receipt-list');
-    receiptList.innerHTML = '';
-    let totalQty = 0;
+  const receiptList = document.getElementById('receipt-list');
+  receiptList.innerHTML = '';
+  let totalQty = 0;
 
-    bill.forEach(item => {
-        const row = document.createElement('tr');
-        row.innerHTML = `
-            <td>${item.productName}</td>
-            <td>${item.quantity}</td>
-            <td>₱${item.price}</td>
-        `;
-        receiptList.appendChild(row);
-        totalQty += item.quantity;
-    });
+  bill.forEach(item => {
+      const row = document.createElement('tr');
+      row.innerHTML = `
+          <td>${item.productName}</td>
+          <td>${item.quantity}</td>
+          <td>₱${item.price}</td>
+      `;
+      receiptList.appendChild(row);
+      totalQty += item.quantity;
+  });
 
-    document.getElementById('receipt-total').textContent = `₱${totalAmount.toFixed(2)}`;
-    document.getElementById('receipt-qty-total').textContent = totalQty;
+  document.getElementById('receipt-total').textContent = `₱${totalAmount.toFixed(2)}`;
+  document.getElementById('receipt-qty-total').textContent = totalQty;
 
-    document.getElementById('receipt-modal').style.display = 'block';
+  document.getElementById('receipt-modal').style.display = 'block';
 
-    // Automatically trigger the print dialog
-    setTimeout(() => {
-        window.print();
-    }, 500); // Delay to ensure the modal is fully rendered before printing
+  // Automatically trigger the print dialog
+  setTimeout(() => {
+      window.print();
+  }, 500); // Delay to ensure the modal is fully rendered before printing
 }
 
 function handleGcashTransaction(type) {
@@ -1253,3 +1303,56 @@ function updateInventoryStock(amount, action) {
         })
         .catch(error => console.error('Error updating inventory:', error));
 }
+
+// Function to open the POS GCash modal
+function openPosGcashModal() {
+  document.getElementById('posGcashModal').style.display = 'block';
+}
+
+// Function to close the POS GCash modal
+function closePosGcashModal() {
+  document.getElementById('posGcashModal').style.display = 'none';
+}
+
+// Function to handle POS GCash transaction submission
+document.getElementById('gcash-pos-submit-transaction').addEventListener('click', function() {
+  const transactionType = document.getElementById('gcash-pos-transaction-type').value;
+  const gcashNumber = document.getElementById('gcash-pos-number').value;
+  const amount = parseFloat(document.getElementById('gcash-pos-amount').value);
+
+  fetch('php/get_current_user.php')
+      .then(response => response.json())
+      .then(data => {
+          if (data.success) {
+              const userId = data.userId;
+
+              const formData = new FormData();
+              formData.append('transaction_type', transactionType);
+              formData.append('gcash_number', gcashNumber);
+              formData.append('amount', amount);
+              formData.append('user_id', userId);
+
+              fetch('php/make_gcash_transaction.php', {
+                  method: 'POST',
+                  body: formData
+              })
+              .then(response => response.json())
+              .then(data => {
+                  if (data.success) {
+                      alert('Transaction recorded successfully');
+                      closePosGcashModal();
+                      // Additional actions after successful transaction
+                  } else {
+                      console.error('Error recording transaction:', data.message);
+                      alert('Error recording transaction: ' + data.message);
+                  }
+              })
+              .catch(error => console.error('Error recording transaction:', error));
+          } else {
+              console.error('Error fetching current user:', data.message);
+              alert('Error fetching current user: ' + data.message);
+          }
+      })
+      .catch(error => console.error('Error fetching current user:', error));
+});
+

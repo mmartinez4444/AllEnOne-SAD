@@ -1,3 +1,5 @@
+//useless
+
 <?php
 include 'connect.php';
 
