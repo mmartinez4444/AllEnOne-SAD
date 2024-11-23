@@ -2,7 +2,7 @@
 	--primary-color: #4834d4;
 	--success-color: #6ab04c;
 	--warning-color: #f0932b;
-	--danger-color: #fc0000;
+	--danger-color: #FF6F18;
 
 	--light-color: #212529;
 	--light-second-color: #727475;
@@ -1274,6 +1274,278 @@ table th {
     color: #fff;
 }
 
+/* Inventory GCash Modal styles */
+.gcash-modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
+.gcash-modal-content {
+    background-color: #fefefe;
+    margin: 10% auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 80%;
+    max-width: 400px;
+    border-radius: 10px;
+    text-align: center;
+}
+
+.gcash-close {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+.gcash-close:hover,
+.gcash-close:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.gcash-header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
+.gcash-logo {
+    width: 150px;
+    height: auto;
+    margin-right: 10px;
+}
+
+.pos-logo {
+    width: 150px;
+    height: auto;
+    
+}
+
+.gcash-balance {
+    font-size: 24px;
+    font-weight: bold;
+    color: #333;
+}
+
+/* GCash POS Header styles */
+.gcash-pos-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.gcash-pos-logo {
+    width: 150px; /* Adjust the width as needed */
+    height: auto; /* Maintain the aspect ratio */
+}
+
+.gcash-btn-info {
+    display: flex;
+    align-items: center;
+    padding: 10px 20px;
+    font-size: 16px;
+    color: #fff;
+    background-color: #17a2b8;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    text-decoration: none;
+}
+
+.gcash-btn-info i {
+    margin-right: 5px;
+}
+
+.gcash-btn-info:hover {
+    background-color: #138496;
+}
+
+/* GCash POS Modal styles */
+.gcash-pos-modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
+.gcash-pos-modal-content {
+    background-color: #fefefe;
+    margin: 10% auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 80%;
+    max-width: 400px;
+    border-radius: 10px;
+    text-align: center;
+}
+
+.gcash-pos-close {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+.gcash-pos-close:hover,
+.gcash-pos-close:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.gcash-pos-header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
+.gcash-pos-logo {
+    width: 200px;
+    height: auto;
+    margin-right: 10px;
+}
+
+.gcash-pos-body {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.gcash-pos-body label {
+    margin-top: 10px;
+}
+
+.gcash-pos-body input,
+.gcash-pos-body select,
+.gcash-pos-body textarea {
+    width: 100%;
+    padding: 10px;
+    margin-top: 5px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+.gcash-pos-body button {
+    margin: 20px auto 0 auto; /* Center the button horizontally */
+    padding: 10px 20px;
+    background-color: #17a2b8;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.gcash-pos-body button:hover {
+    background-color: #138496;
+}
+
+/* POS Header styles */
+.pos-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.pos-logo-specific {
+    width: 250px; /* Adjust the width as needed */
+    height: auto; /* Maintain the aspect ratio */
+}
+
+.btn-pos-info {
+    display: flex;
+    align-items: center;
+    padding: 10px 20px;
+    font-size: 16px;
+    color: #fff;
+    background-color: #17a2b8;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    text-decoration: none;
+}
+
+.btn-pos-info i {
+    margin-right: 5px;
+}
+
+.btn-pos-info:hover {
+    background-color: #138496;
+}
+
+/* Edit buton gcash inventory */
+
+.gcash-edit-btn {
+    margin-top: 20px;
+    padding: 10px 20px;
+    background-color: #17a2b8;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.gcash-edit-btn:hover {
+    background-color: #138496;
+}
+
+.gcash-edit-form {
+    margin-top: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.gcash-edit-form label {
+    margin-bottom: 10px;
+}
+
+.gcash-edit-form input {
+    padding: 10px;
+    margin-bottom: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    width: 100%;
+}
+
+.gcash-edit-form button {
+    padding: 10px 20px;
+    background-color: #17a2b8;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.gcash-edit-form button:hover {
+    background-color: #138496;
+}
+
+/* GCash Form Styles */
+
+
+
 /* Adjust POS Section Position */
 #pos {
     margin-top: 80px; /* Adjust this value as needed to move the POS section down */
@@ -1590,6 +1862,10 @@ table th {
     margin: 5px 0;
 }
 
+.summary-item span {
+    margin-left: 10px; /* Add spacing between label and value */
+}
+
 .receipt-footer {
     margin-top: 20px;
     font-weight: bold;
@@ -1598,9 +1874,10 @@ table th {
 /* Hide elements during printing */
 @media print {
     .receipt-modal-content {
-        width: 100%;
+        width: 80mm; /* Set the width to 80mm for receipt size */
         border: none;
         box-shadow: none;
+        margin: auto; /* Center the receipt */
     }
 
     .receipt-close-btn {
@@ -1620,8 +1897,42 @@ table th {
         position: absolute;
         left: 0;
         top: 0;
+        width: 80mm; /* Set the width to 80mm for receipt size */
+        height: auto; /* Set height to auto to accommodate varying lengths */
+        margin: auto; /* Center the receipt */
+    }
+
+    .receipt-body {
+        page-break-inside: auto;
+    }
+
+    .receipt-body table {
         width: 100%;
-        height: 100%;
+    }
+
+    .receipt-body table, .receipt-body th, .receipt-body td {
+        border: 1px solid black;
+        border-collapse: collapse;
+    }
+
+    .receipt-body th, .receipt-body td {
+        padding: 8px;
+        text-align: left;
+    }
+
+    .receipt-summary {
+        page-break-inside: avoid;
+    }
+
+    .receipt-footer {
+        page-break-inside: avoid;
+    }
+
+    .receipt-body table thead {
+        display: table-header-group; /* Ensure the header is only displayed at the top of the table */
+    }
+
+    .receipt-body table tbody {
+        display: table-row-group;
     }
 }
-

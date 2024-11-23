@@ -1,0 +1,75 @@
+[21-Nov-2024 18:23:46 Europe/Berlin] PHP Fatal error:  Uncaught mysqli_sql_exception: Unknown column 'notes' in 'field list' in D:\XAMPP\htdocs\AllenOne-Store\php\make_gcash_transaction.php:20
+Stack trace:
+#0 D:\XAMPP\htdocs\AllenOne-Store\php\make_gcash_transaction.php(20): mysqli->prepare('INSERT INTO gca...')
+#1 {main}
+  thrown in D:\XAMPP\htdocs\AllenOne-Store\php\make_gcash_transaction.php on line 20
+[21-Nov-2024 18:23:49 Europe/Berlin] PHP Fatal error:  Uncaught mysqli_sql_exception: Unknown column 'notes' in 'field list' in D:\XAMPP\htdocs\AllenOne-Store\php\make_gcash_transaction.php:20
+Stack trace:
+#0 D:\XAMPP\htdocs\AllenOne-Store\php\make_gcash_transaction.php(20): mysqli->prepare('INSERT INTO gca...')
+#1 {main}
+  thrown in D:\XAMPP\htdocs\AllenOne-Store\php\make_gcash_transaction.php on line 20
+[21-Nov-2024 18:23:55 Europe/Berlin] PHP Fatal error:  Uncaught mysqli_sql_exception: Unknown column 'notes' in 'field list' in D:\XAMPP\htdocs\AllenOne-Store\php\make_gcash_transaction.php:20
+Stack trace:
+#0 D:\XAMPP\htdocs\AllenOne-Store\php\make_gcash_transaction.php(20): mysqli->prepare('INSERT INTO gca...')
+#1 {main}
+  thrown in D:\XAMPP\htdocs\AllenOne-Store\php\make_gcash_transaction.php on line 20
+[21-Nov-2024 18:23:56 Europe/Berlin] PHP Fatal error:  Uncaught mysqli_sql_exception: Unknown column 'notes' in 'field list' in D:\XAMPP\htdocs\AllenOne-Store\php\make_gcash_transaction.php:20
+Stack trace:
+#0 D:\XAMPP\htdocs\AllenOne-Store\php\make_gcash_transaction.php(20): mysqli->prepare('INSERT INTO gca...')
+#1 {main}
+  thrown in D:\XAMPP\htdocs\AllenOne-Store\php\make_gcash_transaction.php on line 20
+[21-Nov-2024 18:23:56 Europe/Berlin] PHP Fatal error:  Uncaught mysqli_sql_exception: Unknown column 'notes' in 'field list' in D:\XAMPP\htdocs\AllenOne-Store\php\make_gcash_transaction.php:20
+Stack trace:
+#0 D:\XAMPP\htdocs\AllenOne-Store\php\make_gcash_transaction.php(20): mysqli->prepare('INSERT INTO gca...')
+#1 {main}
+  thrown in D:\XAMPP\htdocs\AllenOne-Store\php\make_gcash_transaction.php on line 20
+[21-Nov-2024 18:27:03 Europe/Berlin] PHP Fatal error:  Uncaught mysqli_sql_exception: Unknown column 'notes' in 'field list' in D:\XAMPP\htdocs\AllenOne-Store\php\make_gcash_transaction.php:20
+Stack trace:
+#0 D:\XAMPP\htdocs\AllenOne-Store\php\make_gcash_transaction.php(20): mysqli->prepare('INSERT INTO gca...')
+#1 {main}
+  thrown in D:\XAMPP\htdocs\AllenOne-Store\php\make_gcash_transaction.php on line 20
+[21-Nov-2024 18:29:51 Europe/Berlin] PHP Fatal error:  Uncaught mysqli_sql_exception: Unknown column 'notes' in 'field list' in D:\XAMPP\htdocs\AllenOne-Store\php\make_gcash_transaction.php:20
+Stack trace:
+#0 D:\XAMPP\htdocs\AllenOne-Store\php\make_gcash_transaction.php(20): mysqli->prepare('INSERT INTO gca...')
+#1 {main}
+  thrown in D:\XAMPP\htdocs\AllenOne-Store\php\make_gcash_transaction.php on line 20
+[21-Nov-2024 18:30:03 Europe/Berlin] PHP Fatal error:  Uncaught mysqli_sql_exception: Unknown column 'notes' in 'field list' in D:\XAMPP\htdocs\AllenOne-Store\php\make_gcash_transaction.php:20
+Stack trace:
+#0 D:\XAMPP\htdocs\AllenOne-Store\php\make_gcash_transaction.php(20): mysqli->prepare('INSERT INTO gca...')
+#1 {main}
+  thrown in D:\XAMPP\htdocs\AllenOne-Store\php\make_gcash_transaction.php on line 20
+[21-Nov-2024 18:31:47 Europe/Berlin] PHP Fatal error:  Uncaught mysqli_sql_exception: Unknown column 'notes' in 'field list' in D:\XAMPP\htdocs\AllenOne-Store\php\make_gcash_transaction.php:20
+Stack trace:
+#0 D:\XAMPP\htdocs\AllenOne-Store\php\make_gcash_transaction.php(20): mysqli->prepare('INSERT INTO gca...')
+#1 {main}
+  thrown in D:\XAMPP\htdocs\AllenOne-Store\php\make_gcash_transaction.php on line 20
+[23-Nov-2024 10:21:55 Europe/Berlin] PHP Fatal error:  Uncaught ArgumentCountError: The number of elements in the type definition string must match the number of bind variables in D:\XAMPP\htdocs\AllenOne-Store\php\make_gcash_transaction.php:43
+Stack trace:
+#0 D:\XAMPP\htdocs\AllenOne-Store\php\make_gcash_transaction.php(43): mysqli_stmt->bind_param('ssdids', 'cash_out', 'asdasd', '100', '82', 0.0)
+#1 {main}
+  thrown in D:\XAMPP\htdocs\AllenOne-Store\php\make_gcash_transaction.php on line 43
+[23-Nov-2024 10:21:58 Europe/Berlin] PHP Fatal error:  Uncaught ArgumentCountError: The number of elements in the type definition string must match the number of bind variables in D:\XAMPP\htdocs\AllenOne-Store\php\make_gcash_transaction.php:43
+Stack trace:
+#0 D:\XAMPP\htdocs\AllenOne-Store\php\make_gcash_transaction.php(43): mysqli_stmt->bind_param('ssdids', 'cash_out', 'asdasd', '100', '82', 0.0)
+#1 {main}
+  thrown in D:\XAMPP\htdocs\AllenOne-Store\php\make_gcash_transaction.php on line 43
+[23-Nov-2024 10:24:10 Europe/Berlin] PHP Fatal error:  Uncaught ArgumentCountError: The number of elements in the type definition string must match the number of bind variables in D:\XAMPP\htdocs\AllenOne-Store\php\make_gcash_transaction.php:43
+Stack trace:
+#0 D:\XAMPP\htdocs\AllenOne-Store\php\make_gcash_transaction.php(43): mysqli_stmt->bind_param('ssdids', 'cash_in', '123', '123', '82', 223.0)
+#1 {main}
+  thrown in D:\XAMPP\htdocs\AllenOne-Store\php\make_gcash_transaction.php on line 43
+[23-Nov-2024 10:28:08 Europe/Berlin] PHP Fatal error:  Uncaught ArgumentCountError: The number of elements in the type definition string must match the number of bind variables in D:\XAMPP\htdocs\AllenOne-Store\php\make_gcash_transaction.php:46
+Stack trace:
+#0 D:\XAMPP\htdocs\AllenOne-Store\php\make_gcash_transaction.php(46): mysqli_stmt->bind_param('ssdids', 'cash_out', '1', '100', '82', 900.0)
+#1 {main}
+  thrown in D:\XAMPP\htdocs\AllenOne-Store\php\make_gcash_transaction.php on line 46
+[23-Nov-2024 10:28:47 Europe/Berlin] PHP Fatal error:  Uncaught ArgumentCountError: The number of elements in the type definition string must match the number of bind variables in D:\XAMPP\htdocs\AllenOne-Store\php\make_gcash_transaction.php:46
+Stack trace:
+#0 D:\XAMPP\htdocs\AllenOne-Store\php\make_gcash_transaction.php(46): mysqli_stmt->bind_param('ssdids', 'cash_out', '1', '100', '82', 900.0)
+#1 {main}
+  thrown in D:\XAMPP\htdocs\AllenOne-Store\php\make_gcash_transaction.php on line 46
+[23-Nov-2024 10:28:55 Europe/Berlin] PHP Fatal error:  Uncaught ArgumentCountError: The number of elements in the type definition string must match the number of bind variables in D:\XAMPP\htdocs\AllenOne-Store\php\make_gcash_transaction.php:46
+Stack trace:
+#0 D:\XAMPP\htdocs\AllenOne-Store\php\make_gcash_transaction.php(46): mysqli_stmt->bind_param('ssdids', 'cash_out', '1', '100', '82', 900.0)
+#1 {main}
+  thrown in D:\XAMPP\htdocs\AllenOne-Store\php\make_gcash_transaction.php on line 46

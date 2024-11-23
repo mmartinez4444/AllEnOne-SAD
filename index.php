@@ -174,9 +174,11 @@ $role = $_SESSION['role'];
                         <h2>Inventory <b>Management</b></h2>
                     </div>
                     <div class="col-sm-7 text-right">
-                    <?php if ($role === 'admin'): ?>
+                        <?php if ($role === 'admin'): ?>
                             <a href="#" class="btn btn-primary" onclick="openAddProductModal()"><i class="fas fa-plus"></i> <span>Add New Product</span></a>
                             <a href="#" class="btn btn-secondary" onclick="openCategoryModal()"><i class="fas fa-plus"></i> <span>Category</span></a>
+                           
+                            <a href="#" class="btn btn-info" onclick="openInventoryGcashModal()"><i class="fas fa-wallet"></i> <span>GCash</span></a>                       
                             <?php endif; ?>
                         <input type="text" id="searchInventoryInput" class="search-input" placeholder="Search products..." onkeyup="searchInventory()">
                         <select id="filterCategoryDropdown" class="filter-dropdown" onchange="filterInventory()">
@@ -197,7 +199,7 @@ $role = $_SESSION['role'];
             </div>
             <div class="table-responsive">
                 <table class="table table-striped table-hover inventory-table">
-                    <thead>
+                                    <thead>
                         <tr>
                             <th>ID</th>
                             <th>Image</th>
@@ -207,6 +209,7 @@ $role = $_SESSION['role'];
                             <th>Stock</th>
                             <th>Selling Price</th>
                             <th>Buying Price</th>
+                            <th>Discount Eligibility</th> <!-- New column header -->
                             <th>Date Added</th>
                             <th>Updated At</th>
                             <th>Action</th>
@@ -214,7 +217,7 @@ $role = $_SESSION['role'];
                     </thead>
                     <tbody id="inventoryTableBody">
                     <?php
-$sql = "SELECT inventory.id, inventory.image, inventory.product_code, inventory.product_name, categories.category_name, inventory.stock, inventory.price, inventory.buying_price, inventory.date_added, inventory.updated_at 
+$sql = "SELECT inventory.id, inventory.image, inventory.product_code, inventory.product_name, categories.category_name, inventory.stock, inventory.price, inventory.buying_price, inventory.date_added, inventory.updated_at, inventory.discount_eligible 
         FROM inventory 
         JOIN categories ON inventory.category_id = categories.id
         ORDER BY inventory.id ASC";
@@ -231,6 +234,9 @@ if ($result->num_rows > 0) {
             $stockClass = 'high-stock';
         }
 
+        // Determine discount eligibility
+        $discountEligible = $row['discount_eligible'] ? 'Eligible' : 'Not Eligible';
+
         echo "<tr>";
         echo "<td>{$row['id']}</td>";
         echo "<td><img src='uploads/{$row['image']}' alt='{$row['product_name']}' width='50'></td>";
@@ -239,19 +245,18 @@ if ($result->num_rows > 0) {
         echo "<td>{$row['category_name']}</td>";
         echo "<td class='{$stockClass}'>{$row['stock']}</td>";
         echo "<td>{$row['price']}</td>";
-        echo "<td>{$row['buying_price']}</td>";
+        echo "<td>{$discountEligible}</td>"; // Add discount eligibility column
         echo "<td>{$row['date_added']}</td>";
         echo "<td>{$row['updated_at']}</td>";
         echo "<td>";
-      
-            echo "<a href='#' class='inventory-edit-btn' onclick='openEditInventoryProductModal({$row['id']})'><i class='fas fa-edit'></i></a>";
-            echo "<a href='#' class='delete-btn' data-id='{$row['id']}' onclick='openInventoryDeleteModal({$row['id']})'><i class='fas fa-trash'></i></a>";
-        }
+        echo "<a href='#' class='inventory-edit-btn' onclick='openEditInventoryProductModal({$row['id']})'><i class='fas fa-edit'></i></a>";
+        echo "<a href='#' class='delete-btn' data-id='{$row['id']}' onclick='openInventoryDeleteModal({$row['id']})'><i class='fas fa-trash'></i></a>";
         echo "</td>";
         echo "</tr>";
     }
+} else {
     echo "<tr><td colspan='11'>No records found</td></tr>";
-
+}
 ?>
                     </tbody>
                 </table>
@@ -268,6 +273,23 @@ if ($result->num_rows > 0) {
                     </div>
                 </div>
             </div>
+        </div>
+    </div>
+</div>
+
+<!-- GCash Modal for Inventory -->
+<div id="inventoryGcashModal" class="gcash-modal">
+    <div class="gcash-modal-content">
+        <span class="gcash-close" onclick="closeInventoryGcashModal()">&times;</span>
+        <div class="gcash-header">
+            <img src="assets/GCash logo.png" alt="GCash Logo" class="gcash-logo">
+        </div>
+        <div id="inventoryGcashBalance" class="gcash-balance"></div>
+        <button class="gcash-edit-btn" onclick="openEditGcashBalanceForm()">Edit Balance</button>
+        <div id="editGcashBalanceForm" class="gcash-edit-form" style="display: none;">
+            <label for="newGcashBalance">New Balance:</label>
+            <input type="number" id="newGcashBalance" step="0.01">
+            <button onclick="updateGcashBalance()">Update</button>
         </div>
     </div>
 </div>
@@ -303,6 +325,13 @@ if ($result->num_rows > 0) {
             <div class="input-group">
                 <label for="editInventoryBuyingPrice">Buying Price</label>
                 <input type="number" step="0.01" id="editInventoryBuyingPrice" name="buying_price" required>
+            </div>
+            <div class="input-group">
+                <label for="editInventoryDiscountEligible">Discount Eligible</label>
+                <select id="editInventoryDiscountEligible" name="discount_eligible">
+                    <option value="1">Eligible</option>
+                    <option value="0">Not Eligible</option>
+                </select>
             </div>
             <button type="submit" class="btn btn-primary">Save Changes</button>
         </form>
@@ -457,10 +486,13 @@ if ($result->num_rows > 0) {
 
 
 
-
-
+<!-- Start of POS Section -->
 <div id="pos" class="content-section" style="display: none;">
-    <div class="pos-container" style="display: flex; flex-direction: row;">
+    <div class="pos-header">
+        <img src="assets/ALLEN ONE GROCERY PHARMACY PAYMENT CENTER.png" alt="AllEnOne Logo" class="pos-logo-specific">
+        <a href="#" class="btn-pos-info" onclick="openPosGcashModal()"><i class="fas fa-wallet"></i> <span>GCash</span></a>
+    </div>
+    <div class="pos-container">
         <!-- Section 1: Categories -->
         <div id="categories-section" class="pos-section">
             <h2>Categories</h2>
@@ -487,15 +519,19 @@ if ($result->num_rows > 0) {
             </table>
             <div class="bill-summary">
                 <div class="bill-summary-item">
-                    <span>Total:</span>
+                <span>Total Amount:</span>
                     <span id="total-amount">₱0.00</span>
                 </div>
                 <div class="bill-summary-item">
-                    <label for="cash-amount">Cash:</label>
+                    <span>SC/PWD Discount:</span>
+                    <span id="sc-pwd-discount">₱0.00</span>
+                </div>
+                <div class="bill-summary-item">
+                    <label for="cash-amount">Tendered Amount:</label>
                     <input type="number" id="cash-amount" class="cash-input">
                 </div>
                 <div class="bill-summary-item">
-                    <span>Balance:</span>
+                    <span>Total Balance:</span>
                     <span id="balance-amount">₱0.00</span>
                 </div>
                 <div class="bill-summary-item">
@@ -513,13 +549,37 @@ if ($result->num_rows > 0) {
                     <label for="gcash-notes">Notes:</label>
                     <textarea id="gcash-notes"></textarea>
                 </div>
+                <button id="apply-discount-btn">Apply SC/PWD Discount</button> <!-- Add discount button -->
                 <button id="complete-sale-btn">Complete Sale</button>
             </div>
         </div>
     </div>
 </div>
 
-
+<!-- POS GCash Modal -->
+<div id="posGcashModal" class="gcash-pos-modal">
+    <div class="gcash-pos-modal-content">
+        <span class="gcash-pos-close" onclick="closePosGcashModal()">&times;</span>
+        <div class="gcash-pos-header">
+            <img src="assets/GCash logo.png" alt="GCash Logo" class="gcash-pos-logo">
+        </div>
+        <div class="gcash-pos-body">
+            <label for="gcash-pos-transaction-type">Transaction Type:</label>
+            <select id="gcash-pos-transaction-type">
+                <option value="cash_in">Cash In</option>
+                <option value="cash_out">Cash Out</option>
+                <option value="load">Load</option>
+            </select>
+            <label for="gcash-pos-number">GCash Number:</label>
+            <input type="text" id="gcash-pos-number">
+            <label for="gcash-pos-amount">Amount:</label>
+            <input type="number" id="gcash-pos-amount">
+            <label for="gcash-pos-notes">Notes:</label>
+            <textarea id="gcash-pos-notes"></textarea>
+            <button id="gcash-pos-submit-transaction">Submit</button>
+        </div>
+    </div>
+</div>
 
 <!-- Receipt Modal -->
 <div id="receipt-modal" class="receipt-modal">
@@ -548,8 +608,11 @@ if ($result->num_rows > 0) {
                 <tbody id="receipt-list"></tbody>
             </table>
             <div class="receipt-summary">
-                <p class="summary-item"><span>Qty Total:</span><span id="receipt-qty-total"></span></p>
-                <p class="summary-item"><span>Total:</span><span id="receipt-total"></span></p>
+                <p class="summary-item"><span>Item(s):</span><span id="receipt-qty-total"></span></p>
+                <p class="summary-item"><span>Total Amount:</span><span id="receipt-total"></span></p>
+                <p class="summary-item"><span>SC/PWD Discount:</span><span id="receipt-sc-pwd-discount"></span></p>
+                <p class="summary-item"><span>Tender Amount:</span><span id="tender-amount"></span></p>
+                <p class="summary-item"><span>Change Amount:</span><span id="change-amount"></span></p>
             </div>
         </div>
         <div class="receipt-footer">

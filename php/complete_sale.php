@@ -9,6 +9,8 @@ $gcash_number = $_POST['gcash_number'];
 $gcash_amount = $_POST['gcash_amount'];
 $gcash_notes = $_POST['gcash_notes'];
 $change_amount = $_POST['change_amount'];
+$tendered_amount = $payment_method === 'cash' ? $cash_amount : $gcash_amount;
+$sc_pwd_discount = $_POST['sc_pwd_discount'];
 
 if (!$bill) {
     echo json_encode(['success' => false, 'message' => 'Invalid bill data']);
@@ -22,14 +24,14 @@ foreach ($bill as $item) {
     $total_price = $item['price'] * $quantity;
 
     // Insert into sales table
-    $sql = "INSERT INTO sales (product_id, user_id, quantity, total_price, payment_mode, change_amount) VALUES (?, ?, ?, ?, ?, ?)";
+    $sql = "INSERT INTO sales (product_id, user_id, quantity, total_price, payment_mode, change_amount, tendered_amount, sc_pwd_discount) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
     $stmt = $conn->prepare($sql);
     if (!$stmt) {
         echo json_encode(['success' => false, 'message' => 'Prepare failed: ' . $conn->error]);
         $conn->close();
         exit();
     }
-    $stmt->bind_param("iiidsd", $product_id, $user_id, $quantity, $total_price, $payment_method, $change_amount);
+    $stmt->bind_param("iiidsdds", $product_id, $user_id, $quantity, $total_price, $payment_method, $change_amount, $tendered_amount, $sc_pwd_discount);
     if (!$stmt->execute()) {
         echo json_encode(['success' => false, 'message' => 'Execute failed: ' . $stmt->error]);
         $conn->close();
@@ -39,41 +41,36 @@ foreach ($bill as $item) {
     $sale_id = $stmt->insert_id;
 
     // Update inventory stock
-    if ($payment_method === 'gcash-cash-in') {
-        $sql = "UPDATE inventory SET stock = stock + ? WHERE id = ?";
-    } else if ($payment_method === 'gcash-cash-out') {
-        $sql = "UPDATE inventory SET stock = stock - ? WHERE id = ?";
-    } else {
-        $sql = "UPDATE inventory SET stock = stock - ? WHERE id = ?";
+    $update_sql = "UPDATE inventory SET stock = stock - ? WHERE id = ?";
+    $update_stmt = $conn->prepare($update_sql);
+    if (!$update_stmt) {
+        echo json_encode(['success' => false, 'message' => 'Prepare failed: ' . $conn->error]);
+        $conn->close();
+        exit();
     }
+    $update_stmt->bind_param("ii", $quantity, $product_id);
+    if (!$update_stmt->execute()) {
+        echo json_encode(['success' => false, 'message' => 'Execute failed: ' . $update_stmt->error]);
+        $conn->close();
+        exit();
+    }
+    $update_stmt->close();
+}
+
+// Insert GCASH transaction if applicable
+if ($payment_method === 'gcash' || $payment_method === 'gcash-cash-in' || $payment_method === 'gcash-cash-out') {
+    $sql = "INSERT INTO gcash_transactions (sale_id, gcash_number, amount, notes) VALUES (?, ?, ?, ?)";
     $stmt = $conn->prepare($sql);
     if (!$stmt) {
         echo json_encode(['success' => false, 'message' => 'Prepare failed: ' . $conn->error]);
         $conn->close();
         exit();
     }
-    $stmt->bind_param("ii", $quantity, $product_id);
+    $stmt->bind_param("isds", $sale_id, $gcash_number, $gcash_amount, $gcash_notes);
     if (!$stmt->execute()) {
         echo json_encode(['success' => false, 'message' => 'Execute failed: ' . $stmt->error]);
         $conn->close();
         exit();
-    }
-
-    // Insert GCASH transaction if applicable
-    if ($payment_method === 'gcash' || $payment_method === 'gcash-cash-in' || $payment_method === 'gcash-cash-out') {
-        $sql = "INSERT INTO gcash_transactions (sale_id, gcash_number, amount, notes) VALUES (?, ?, ?, ?)";
-        $stmt = $conn->prepare($sql);
-        if (!$stmt) {
-            echo json_encode(['success' => false, 'message' => 'Prepare failed: ' . $conn->error]);
-            $conn->close();
-            exit();
-        }
-        $stmt->bind_param("isds", $sale_id, $gcash_number, $gcash_amount, $gcash_notes);
-        if (!$stmt->execute()) {
-            echo json_encode(['success' => false, 'message' => 'Execute failed: ' . $stmt->error]);
-            $conn->close();
-            exit();
-        }
     }
 }
 

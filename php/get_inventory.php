@@ -17,7 +17,7 @@ if ($category) {
     $categoryQuery = "AND categories.category_name LIKE '%$category%'";
 }
 
-$sql = "SELECT inventory.id, inventory.image, inventory.product_code, inventory.product_name, categories.category_name, inventory.stock, inventory.price, inventory.buying_price, inventory.date_added, inventory.updated_at 
+$sql = "SELECT inventory.id, inventory.image, inventory.product_code, inventory.product_name, categories.category_name, inventory.stock, inventory.price, inventory.buying_price, inventory.date_added, inventory.updated_at, inventory.discount_eligible 
         FROM inventory 
         JOIN categories ON inventory.category_id = categories.id
         WHERE 1=1 $searchQuery $categoryQuery
