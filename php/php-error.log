@@ -43,6 +43,7 @@ Stack trace:
 #0 D:\XAMPP\htdocs\AllenOne-Store\php\make_gcash_transaction.php(20): mysqli->prepare('INSERT INTO gca...')
 #1 {main}
   thrown in D:\XAMPP\htdocs\AllenOne-Store\php\make_gcash_transaction.php on line 20
+<<<<<<< HEAD
 [23-Nov-2024 10:21:55 Europe/Berlin] PHP Fatal error:  Uncaught ArgumentCountError: The number of elements in the type definition string must match the number of bind variables in D:\XAMPP\htdocs\AllenOne-Store\php\make_gcash_transaction.php:43
 Stack trace:
 #0 D:\XAMPP\htdocs\AllenOne-Store\php\make_gcash_transaction.php(43): mysqli_stmt->bind_param('ssdids', 'cash_out', 'asdasd', '100', '82', 0.0)
@@ -73,3 +74,5 @@ Stack trace:
 #0 D:\XAMPP\htdocs\AllenOne-Store\php\make_gcash_transaction.php(46): mysqli_stmt->bind_param('ssdids', 'cash_out', '1', '100', '82', 900.0)
 #1 {main}
   thrown in D:\XAMPP\htdocs\AllenOne-Store\php\make_gcash_transaction.php on line 46
+=======
+>>>>>>> af0a49d0c7ca5fd021a968ca3469d2247a2669df
