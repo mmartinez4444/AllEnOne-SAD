@@ -1164,15 +1164,17 @@ function updateBillDisplay() {
   totalAmount = 0;
 
   bill.forEach((item, index) => {
+      const totalItemPrice = item.price * item.quantity; // Calculate total price for the item
       const row = document.createElement('tr');
       row.innerHTML = `
           <td>${item.productName}</td>
           <td class="gcash-only"><input type="number" class="bill-item-qty" value="${item.quantity}" min="1" data-index="${index}"></td>
           <td class="gcash-only">₱${parseFloat(item.price).toFixed(2)}</td>
+          <td class="gcash-only">₱${totalItemPrice.toFixed(2)}</td> <!-- Display total price -->
           <td><button class="remove-item-btn" data-index="${index}">x</button></td>
       `;
       billList.appendChild(row);
-      totalAmount += parseFloat(item.price) * item.quantity;
+      totalAmount += totalItemPrice; // Add total price to the total amount
   });
 
   document.getElementById('total-amount').textContent = `₱${totalAmount.toFixed(2)}`;
@@ -1303,18 +1305,19 @@ function showReceiptModal(saleId, cashierName, date, paymentMethod, tenderedAmou
   document.getElementById('tender-amount').textContent = `₱${tenderedAmount.toFixed(2)}`;
   document.getElementById('change-amount').textContent = `₱${changeAmount.toFixed(2)}`;
 
-  const receiptList = document.getElementById('receipt-list');
-  receiptList.innerHTML = '';
+  const receiptItems = document.getElementById('receipt-items');
+  receiptItems.innerHTML = '';
   let totalQty = 0;
 
   bill.forEach(item => {
-      const row = document.createElement('tr');
-      row.innerHTML = `
-          <td>${item.productName}</td>
-          <td>${item.quantity}</td>
-          <td>₱${parseFloat(item.price).toFixed(2)}</td>
+      const totalItemPrice = item.price * item.quantity;
+      const itemElement = document.createElement('div');
+      itemElement.className = 'receipt-item';
+      itemElement.innerHTML = `
+          <div class="receipt-item-name">${item.productName}</div>
+          <div class="receipt-item-amount">QTY: ${item.quantity} x ₱${parseFloat(item.price).toFixed(2)} = ₱${totalItemPrice.toFixed(2)}</div>
       `;
-      receiptList.appendChild(row);
+      receiptItems.appendChild(itemElement);
       totalQty += item.quantity;
   });
 
@@ -1437,3 +1440,212 @@ document.getElementById('gcash-pos-submit-transaction').addEventListener('click'
       });
 });
 
+// End of POS GCash modal
+
+document.addEventListener('DOMContentLoaded', function() {
+  // Function to handle barcode input
+  function handleBarcodeInput(event) {
+      if (event.key === 'Enter') {
+          const barcode = event.target.value;
+          addItemToBill(barcode);
+          event.target.value = ''; // Clear the input field
+      }
+  }
+
+  // Function to simulate barcode scan
+  function scanBarcode() {
+      const barcodeInput = document.getElementById('barcode-input');
+      const barcode = barcodeInput.value;
+      addItemToBill(barcode);
+      barcodeInput.value = ''; // Clear the input field
+  }
+
+  // Function to add item to bill based on barcode
+  function addItemToBill(barcode) {
+      // Fetch item details from the server using the barcode
+      fetch(`php/get_item_by_barcode.php?barcode=${barcode}`)
+          .then(response => response.json())
+          .then(data => {
+              if (data.success) {
+                  const item = data.item;
+                  if (item.stock > 0) {
+                      addToBill(item.id, item.product_name, item.price, item.stock, item.discount_eligible);
+                  } else {
+                      alert('Item is out of stock');
+                  }
+              } else {
+                  alert('Item not found');
+              }
+          })
+          .catch(error => console.error('Error fetching item:', error));
+  }
+
+  // Function to add item to bill
+  function addToBill(productId, productName, price, stock, discountEligible) {
+      const existingItem = bill.find(item => item.productId === productId);
+      if (existingItem) {
+          if (existingItem.quantity + 1 > stock) {
+              alert('Cannot add more items than available in stock.');
+              return;
+          }
+          existingItem.quantity += 1;
+      } else {
+          bill.push({ productId, productName, price, quantity: 1, discount_eligible: discountEligible }); // Add discount eligibility
+      }
+
+      updateBillDisplay();
+  }
+
+  // Function to update the bill display
+  function updateBillDisplay() {
+      const billList = document.getElementById('bill-list');
+      billList.innerHTML = '';
+      totalAmount = 0;
+
+      bill.forEach((item, index) => {
+          const totalItemPrice = item.price * item.quantity; // Calculate total price for the item
+          const row = document.createElement('tr');
+          row.innerHTML = `
+              <td>${item.productName}</td>
+              <td class="gcash-only"><input type="number" class="bill-item-qty" value="${item.quantity}" min="1" data-index="${index}"></td>
+              <td class="gcash-only">₱${parseFloat(item.price).toFixed(2)}</td>
+              <td class="gcash-only">₱${totalItemPrice.toFixed(2)}</td> <!-- Display total price -->
+              <td><button class="remove-item-btn" data-index="${index}">x</button></td>
+          `;
+          billList.appendChild(row);
+          totalAmount += totalItemPrice; // Add total price to the total amount
+      });
+
+      document.getElementById('total-amount').textContent = `₱${totalAmount.toFixed(2)}`;
+      updateBalance();
+
+      // Add event listeners for quantity change and remove buttons
+      document.querySelectorAll('.bill-item-qty').forEach(input => {
+          input.addEventListener('input', updateQuantity);
+      });
+      document.querySelectorAll('.remove-item-btn').forEach(button => {
+          button.addEventListener('click', removeFromBill);
+      });
+  }
+
+  // Function to update the quantity of items in the bill
+  function updateQuantity(event) {
+      const index = event.target.dataset.index;
+      const newQuantity = parseInt(event.target.value);
+      if (newQuantity > 0) {
+          bill[index].quantity = newQuantity;
+          updateBillDisplay();
+      }
+  }
+
+  // Function to remove an item from the bill
+  function removeFromBill(event) {
+      const index = event.target.dataset.index;
+      bill.splice(index, 1);
+      updateBillDisplay();
+  }
+
+  // Function to update the balance
+  function updateBalance() {
+      const paymentMethod = document.getElementById('payment-method').value;
+      let paidAmount = 0;
+
+      if (paymentMethod === 'gcash' || paymentMethod === 'gcash-cash-in' || paymentMethod === 'gcash-cash-out') {
+          paidAmount = parseFloat(document.getElementById('gcash-amount').value) || 0;
+      } else {
+          paidAmount = parseFloat(document.getElementById('cash-amount').value) || 0;
+      }
+
+      const totalAmount = parseFloat(document.getElementById('total-amount').textContent.replace('₱', '')) || 0;
+      const balance = paidAmount - totalAmount;
+
+      document.getElementById('balance-amount').textContent = `₱${balance.toFixed(2)}`;
+  }
+
+  // Automatically focus on the barcode input field when the POS section is displayed
+  function focusBarcodeInput() {
+      const barcodeInput = document.getElementById('barcode-input');
+      barcodeInput.focus();
+      barcodeInput.select(); // Select the text to ensure new input replaces old input
+  }
+
+  // Attach event listeners
+  document.getElementById('barcode-input').addEventListener('keypress', handleBarcodeInput);
+  document.getElementById('scan-barcode-btn').addEventListener('click', scanBarcode);
+
+  // Focus on the barcode input field when the POS section is displayed
+  const posSection = document.getElementById('pos');
+  const observer = new MutationObserver(function(mutations) {
+      mutations.forEach(function(mutation) {
+          if (mutation.attributeName === 'style' && posSection.style.display !== 'none') {
+              focusBarcodeInput();
+          }
+      });
+  });
+  observer.observe(posSection, { attributes: true });
+
+  // Ensure the barcode input field is focused when the page loads
+  focusBarcodeInput();
+});
+
+
+// Sales Section
+
+document.addEventListener('DOMContentLoaded', function() {
+  console.log('DOM fully loaded and parsed');
+  fetchStats('daily'); // Fetch daily stats by default
+
+  document.getElementById('time-period').addEventListener('change', function() {
+      const period = this.value;
+      fetchStats(period);
+  });
+});
+
+function fetchStats(period) {
+  fetch(`php/get_sales_stats.php?period=${period}`)
+      .then(response => {
+          if (!response.ok) {
+              throw new Error('Network response was not ok ' + response.statusText);
+          }
+          return response.json();
+      })
+      .then(data => {
+          console.log('Data fetched:', data);
+
+          // Update titles
+          document.getElementById('sales-title').textContent = `${capitalizeFirstLetter(period)} Sales`;
+          document.getElementById('profit-title').textContent = `${capitalizeFirstLetter(period)} Profit`;
+          document.getElementById('products-sold-title').textContent = `${capitalizeFirstLetter(period)} Products Sold`;
+
+          // Update stats
+          animateValue('total-sales', 0, parseFloat(data.totalSales), 500, '₱', true);
+          animateValue('total-profit', 0, parseFloat(data.totalProfit), 500, '₱', true);
+          animateValue('total-products-sold', 0, parseInt(data.totalProductsSold, 10), 500, '', false);
+      })
+      .catch(error => console.error('Error fetching sales stats:', error));
+}
+
+function animateValue(id, start, end, duration, prefix = '', useDecimals = true) {
+  const obj = document.getElementById(id);
+  let startTimestamp = null;
+  const step = (timestamp) => {
+      if (!startTimestamp) startTimestamp = timestamp;
+      const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+      const value = start + progress * (end - start);
+      obj.textContent = prefix + formatNumberWithCommas(useDecimals ? value.toFixed(2) : Math.floor(value));
+      if (progress < 1) {
+          window.requestAnimationFrame(step);
+      } else {
+          obj.textContent = prefix + formatNumberWithCommas(useDecimals ? end.toFixed(2) : end); // Ensure the final value is set
+      }
+  };
+  window.requestAnimationFrame(step);
+}
+
+function formatNumberWithCommas(number) {
+  return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+}
+
+function capitalizeFirstLetter(string) {
+  return string.charAt(0).toUpperCase() + string.slice(1);
+}

@@ -486,11 +486,16 @@ if ($result->num_rows > 0) {
 
 
 
-<!-- Start of POS Section -->
 <div id="pos" class="content-section" style="display: none;">
     <div class="pos-header">
         <img src="assets/ALLEN ONE GROCERY PHARMACY PAYMENT CENTER.png" alt="AllEnOne Logo" class="pos-logo-specific">
         <a href="#" class="btn-pos-info" onclick="openPosGcashModal()"><i class="fas fa-wallet"></i> <span>GCash</span></a>
+    </div>
+    <!-- New Barcode Scanner Section -->
+    <div class="barcode-scanner">
+        <button id="scan-barcode-btn">SCAN BARCODE</button>
+        <input type="text" id="barcode-input" placeholder="Scan or enter barcode" onkeypress="handleBarcodeInput(event)">
+    
     </div>
     <div class="pos-container">
         <!-- Section 1: Categories -->
@@ -503,56 +508,57 @@ if ($result->num_rows > 0) {
             <h2>Items</h2>
             <div id="items-list" class="items-container"></div>
         </div>
-        <!-- Section 3: Bill -->
-        <div id="bill-section" class="pos-section">
-            <h2>Bill</h2>
-            <table id="bill-table">
-                <thead>
-                    <tr>
-                        <th>Description</th>
-                        <th>Qty</th>
-                        <th>Price</th>
-                        <th></th>
-                    </tr>
-                </thead>
-                <tbody id="bill-list"></tbody>
-            </table>
-            <div class="bill-summary">
-                <div class="bill-summary-item">
-                <span>Total Amount:</span>
-                    <span id="total-amount">₱0.00</span>
-                </div>
-                <div class="bill-summary-item">
-                    <span>SC/PWD Discount:</span>
-                    <span id="sc-pwd-discount">₱0.00</span>
-                </div>
-                <div class="bill-summary-item">
-                    <label for="cash-amount">Tendered Amount:</label>
-                    <input type="number" id="cash-amount" class="cash-input">
-                </div>
-                <div class="bill-summary-item">
-                    <span>Total Balance:</span>
-                    <span id="balance-amount">₱0.00</span>
-                </div>
-                <div class="bill-summary-item">
-                    <label for="payment-method">Payment Method:</label>
-                    <select id="payment-method">
-                        <option value="cash">Cash</option>
-                        <option value="gcash">GCash</option>
-                    </select>
-                </div>
-                <div id="gcash-details" style="display: none;">
-                    <label for="gcash-number">Reference Number:</label>
-                    <input type="text" id="gcash-number">
-                    <label for="gcash-amount">Amount Paid:</label>
-                    <input type="number" id="gcash-amount">
-                    <label for="gcash-notes">Notes:</label>
-                    <textarea id="gcash-notes"></textarea>
-                </div>
-                <button id="apply-discount-btn">Apply SC/PWD Discount</button> <!-- Add discount button -->
-                <button id="complete-sale-btn">Complete Sale</button>
-            </div>
+       <!-- Section 3: Bill -->
+<div id="bill-section" class="pos-section">
+    <h2>Bill</h2>
+    <table id="bill-table">
+        <thead>
+            <tr>
+                <th>Description</th>
+                <th>Qty</th>
+                <th>Price</th>
+                <th>Total</th> <!-- Added Total column -->
+                <th></th>
+            </tr>
+        </thead>
+        <tbody id="bill-list"></tbody>
+    </table>
+    <div class="bill-summary">
+        <div class="bill-summary-item">
+            <span>Total Amount:</span>
+            <span id="total-amount">₱0.00</span>
         </div>
+        <div class="bill-summary-item">
+            <span>SC/PWD Discount:</span>
+            <span id="sc-pwd-discount">₱0.00</span>
+        </div>
+        <div class="bill-summary-item">
+            <label for="cash-amount">Tendered Amount:</label>
+            <input type="number" id="cash-amount" class="cash-input">
+        </div>
+        <div class="bill-summary-item">
+            <span>Total Balance:</span>
+            <span id="balance-amount">₱0.00</span>
+        </div>
+        <div class="bill-summary-item">
+            <label for="payment-method">Payment Method:</label>
+            <select id="payment-method">
+                <option value="cash">Cash</option>
+                <option value="gcash">GCash</option>
+            </select>
+        </div>
+        <div id="gcash-details" style="display: none;">
+            <label for="gcash-number">Reference Number:</label>
+            <input type="text" id="gcash-number">
+            <label for="gcash-amount">Amount Paid:</label>
+            <input type="number" id="gcash-amount">
+            <label for="gcash-notes">Notes:</label>
+            <textarea id="gcash-notes"></textarea>
+        </div>
+        <button id="apply-discount-btn">Apply SC/PWD Discount</button> <!-- Add discount button -->
+        <button id="complete-sale-btn">Complete Sale</button>
+    </div>
+</div>
     </div>
 </div>
 
@@ -592,22 +598,21 @@ if ($result->num_rows > 0) {
             <p>Tel: (123) 456-7890</p>
             <p>VAT REG TIN: 123-456-789-123</p>
         </div>
+        <hr>
         <div class="receipt-body">
             <p>Cashier: <span id="cashier-name"></span></p>
             <p>ID: <span id="sale-id"></span></p>
             <p>Date: <span id="sale-date"></span></p>
             <p>Mode of Payment: <span id="payment-mode"></span></p>
-            <table id="receipt-table">
-                <thead>
-                    <tr>
-                        <th>Description</th>
-                        <th>Qty</th>
-                        <th>Price</th>
-                    </tr>
-                </thead>
-                <tbody id="receipt-list"></tbody>
-            </table>
+            <hr>
+            <div class="receipt-items-header">
+                <span>Item</span>
+                <span>Amount</span>
+            </div>
+            <hr>
+            <div id="receipt-items"></div> <!-- Updated to use a div instead of a table -->
             <div class="receipt-summary">
+            <hr>
                 <p class="summary-item"><span>Item(s):</span><span id="receipt-qty-total"></span></p>
                 <p class="summary-item"><span>Total Amount:</span><span id="receipt-total"></span></p>
                 <p class="summary-item"><span>SC/PWD Discount:</span><span id="receipt-sc-pwd-discount"></span></p>
@@ -623,9 +628,41 @@ if ($result->num_rows > 0) {
 
 
 
-        <div id="sales" class="content-section" style="display: none;">
-            <h1>Sales Content</h1>
+<div id="sales" class="content-section sales-section" style="display: none;">
+    <h1>Sales Report</h1> <!-- Added title -->
+    <div class="sales-dropdown">
+        <label for="time-period">Select Time Period:</label>
+        <select id="time-period">
+            <option value="daily">Daily</option>
+            <option value="weekly">Weekly</option>
+            <option value="monthly">Monthly</option>
+            <option value="yearly">Yearly</option>
+        </select>
+    </div>
+    <div class="stats-container">
+        <div class="stat-box sales-box">
+            <div class="stat-content">
+                <span class="stat-title" id="sales-title">Sales</span>
+                <span class="stat-value" id="total-sales">₱0.00</span>
+            </div>
+            <i class="fas fa-money-bill-wave stat-icon"></i>
         </div>
+        <div class="stat-box profit-box">
+            <div class="stat-content">
+                <span class="stat-title" id="profit-title">Profit</span>
+                <span class="stat-value" id="total-profit">₱0.00</span>
+            </div>
+            <i class="fas fa-chart-line stat-icon"></i>
+        </div>
+        <div class="stat-box products-sold-box">
+            <div class="stat-content">
+                <span class="stat-title" id="products-sold-title">Products Sold</span>
+                <span class="stat-value" id="total-products-sold">0</span>
+            </div>
+            <i class="fas fa-shopping-cart stat-icon"></i>
+        </div>
+    </div>
+</div>
 
 
                         <!-- Start User Section  -->
@@ -875,8 +912,9 @@ if ($result->num_rows > 0) {
     <!-- end main content -->
 
     <!-- import script -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.3/Chart.min.js"></script>
     <script src="index.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
 
     <script>const userId = <?php echo json_encode($_SESSION['user_id']); ?>;</script>
 
@@ -898,7 +936,7 @@ function closeAddProductModal() {
 </script>
 
 <!-- End Add Product Modal -->
-
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/countup.js/2.0.7/countUp.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js"></script>
